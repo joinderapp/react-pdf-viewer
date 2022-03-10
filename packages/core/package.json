@@ -38,7 +38,7 @@
         "react-dom": "^16.8.0 || ^17.0.0"
     },
     "publishConfig": {
-        "access": "public"
+        "registry": "https://npm.pkg.github.com"
     },
     "scripts": {
         "clean": "rm -rf lib && mkdir lib",
