@@ -74,7 +74,12 @@ export const DocumentLoader: React.FC<{
                       cMapUrl: characterMap.url,
                       cMapPacked: characterMap.isCompressed,
                   }
-                : {}
+                : {},
+            {
+                rangeChunkSize: 256000,
+                disableStream: true,
+                //disableAutoFetch: true,
+            }
         );
         const transformParams = transformGetDocumentParams ? transformGetDocumentParams(params) : params;
 
@@ -122,9 +127,12 @@ export const DocumentLoader: React.FC<{
     // (numOfPercentages does not reach 100 yet)
     // So, we have to check both `percentages` and `loaded`
     React.useEffect(() => {
-        percentages === 100 && loadedDocument
-            ? isMounted.current && setStatus(new CompletedState(loadedDocument))
-            : isMounted.current && setStatus(new LoadingState(percentages));
+        // percentages === 100 && loadedDocument
+        //     ? isMounted.current && setStatus(new CompletedState(loadedDocument))
+        //     : isMounted.current && setStatus(new LoadingState(percentages));
+        if (loadedDocument) {
+            isMounted.current && setStatus(new CompletedState(loadedDocument));
+        }
     }, [percentages, loadedDocument]);
 
     if (status instanceof AskForPasswordState) {
