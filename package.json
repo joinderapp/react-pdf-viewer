@@ -30,7 +30,9 @@
         "test:e2e": "jest --runInBand --config jest-e2e.config.js",
         "lint": "eslint packages/**/src/*.ts packages/**/src/*.tsx",
         "format": "prettier --write \"**/*.+(css|js|json|jsx|less|md|ts|tsx)\"",
-        "release": "npm run build && lerna publish from-package"
+        "release": "npm run build && lerna publish from-git",
+        "smart": "lerna publish"
+        
     },
     "devDependencies": {
         "@rollup/plugin-json": "^4.1.0",
