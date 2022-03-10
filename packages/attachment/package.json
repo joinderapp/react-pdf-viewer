@@ -40,7 +40,8 @@
         "react-dom": "^16.8.0 || ^17.0.0"
     },
     "publishConfig": {
-        "registry": "https://npm.pkg.github.com"
+        "registry": "https://npm.pkg.github.com",
+        "access": "public"
     },
     "scripts": {
         "clean": "rm -rf lib && mkdir lib",
@@ -48,5 +49,5 @@
         "js": "cp src/index.d.ts lib && cp dist/index.js lib && rollup -c ../../rollup.config.js",
         "css": "sass --no-source-map src/styles/index.scss lib/styles/index.temp.css && postcss lib/styles/index.temp.css > lib/styles/index.css && rm -rf lib/styles/index.temp.css"
     },
-    "gitHead": "ce169e048d7886b812a36b3d98c3f706ca31b6f0"
+    "gitHead": "bacb73de140d55bb92d84d6ab0907ea50de230c0"
 }
