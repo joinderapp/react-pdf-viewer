@@ -1,24 +1,24 @@
 {
     "name": "@react-pdf-viewer/nextjs-demo",
     "private": true,
-    "version": "3.1.5",
+    "version": "3.1.2",
     "scripts": {
         "copy": "rm -rf public/* && cp -r ../../samples/* public",
         "dev": "npm run copy && next dev"
     },
     "dependencies": {
-        "@react-pdf-viewer/core": "^3.1.5",
-        "@react-pdf-viewer/default-layout": "^3.1.5",
-        "@react-pdf-viewer/drop": "^3.1.5",
-        "@react-pdf-viewer/full-screen": "^3.1.5",
-        "@react-pdf-viewer/highlight": "^3.1.5",
-        "@react-pdf-viewer/open": "^3.1.5",
-        "@react-pdf-viewer/page-navigation": "^3.1.5",
-        "@react-pdf-viewer/print": "^3.1.5",
-        "@react-pdf-viewer/scroll-mode": "^3.1.5",
-        "@react-pdf-viewer/search": "^3.1.5",
-        "@react-pdf-viewer/toolbar": "^3.1.5",
-        "@react-pdf-viewer/zoom": "^3.1.5",
+        "@react-pdf-viewer/core": "^3.1.2",
+        "@react-pdf-viewer/default-layout": "^3.1.2",
+        "@react-pdf-viewer/drop": "^3.1.2",
+        "@react-pdf-viewer/full-screen": "^3.1.2",
+        "@react-pdf-viewer/highlight": "^3.1.2",
+        "@react-pdf-viewer/open": "^3.1.2",
+        "@react-pdf-viewer/page-navigation": "^3.1.2",
+        "@react-pdf-viewer/print": "^3.1.2",
+        "@react-pdf-viewer/scroll-mode": "^3.1.2",
+        "@react-pdf-viewer/search": "^3.1.2",
+        "@react-pdf-viewer/toolbar": "^3.1.2",
+        "@react-pdf-viewer/zoom": "^3.1.2",
         "next": "^12.0.10"
     },
     "devDependencies": {

@@ -1,7 +1,7 @@
 {
     "name": "@react-pdf-viewer/webpack-typescript-demo",
     "private": true,
-    "version": "3.1.5",
+    "version": "3.1.2",
     "scripts": {
         "copy": "cp -rf ../../samples/* dist",
         "typecheck": "tsc --noEmit",
@@ -9,8 +9,8 @@
         "dev": "rm -rf dist && mkdir dist && npm run copy && NODE_ENV=development webpack serve"
     },
     "dependencies": {
-        "@react-pdf-viewer/core": "^3.1.5",
-        "@react-pdf-viewer/default-layout": "^3.1.5"
+        "@react-pdf-viewer/core": "^3.1.2",
+        "@react-pdf-viewer/default-layout": "^3.1.2"
     },
     "devDependencies": {
         "@babel/core": "^7.17.2",
