@@ -33,7 +33,7 @@
         "lib/index.js"
     ],
     "dependencies": {
-        "@react-pdf-viewer/core": "^3.1.2"
+        "@react-pdf-viewer/core": "3.1.2"
     },
     "peerDependencies": {
         "react": "^16.8.0 || ^17.0.0",

@@ -33,11 +33,11 @@
         "lib/index.js"
     ],
     "dependencies": {
-        "@react-pdf-viewer/attachment": "^3.1.2",
-        "@react-pdf-viewer/bookmark": "^3.1.2",
-        "@react-pdf-viewer/core": "^3.1.2",
-        "@react-pdf-viewer/thumbnail": "^3.1.2",
-        "@react-pdf-viewer/toolbar": "^3.1.2"
+        "@react-pdf-viewer/attachment": "3.1.2",
+        "@react-pdf-viewer/bookmark": "3.1.2",
+        "@react-pdf-viewer/core": "3.1.2",
+        "@react-pdf-viewer/thumbnail": "3.1.2",
+        "@react-pdf-viewer/toolbar": "3.1.2"
     },
     "peerDependencies": {
         "react": "^16.8.0 || ^17.0.0",
