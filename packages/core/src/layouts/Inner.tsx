@@ -444,7 +444,8 @@ export const Inner: React.FC<{
                     ref: pagesRef,
                     style: {
                         height: '100%',
-                        overflow: 'auto',
+                        // overflow: 'auto',
+                        overflow: 'overlay',
                         // We need this to jump between destinations or searching results
                         position: 'relative',
                     },
