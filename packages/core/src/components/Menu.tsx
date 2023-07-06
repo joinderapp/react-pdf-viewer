@@ -3,16 +3,17 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
 import { classNames } from '../utils/classNames';
 
-export const Menu: React.FC = ({ children }) => {
+export const Menu: React.FC<{
+    children?: React.ReactNode;
+}> = ({ children }) => {
     const containerRef = React.useRef<HTMLDivElement>();
     const visibleMenuItemsRef = React.useRef<HTMLElement[]>([]);
     const { direction } = React.useContext(ThemeContext);

@@ -3,12 +3,11 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import { PdfJs, Spinner, Store, StoreHandler } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { CoverInner } from './CoverInner';
 import { StoreProps } from './types/StoreProps';
 
@@ -16,7 +15,8 @@ export const Cover: React.FC<{
     getPageIndex?({ numPages }: { numPages: number }): number;
     renderSpinner?: () => React.ReactElement;
     store: Store<StoreProps>;
-}> = ({ getPageIndex, renderSpinner, store }) => {
+    width?: number;
+}> = ({ getPageIndex, renderSpinner, store, width }) => {
     const [currentDoc, setCurrentDoc] = React.useState<PdfJs.PdfDocument>(store.get('doc'));
 
     const handleDocumentChanged: StoreHandler<PdfJs.PdfDocument> = (doc: PdfJs.PdfDocument) => {
@@ -34,7 +34,13 @@ export const Cover: React.FC<{
     return (
         <div className="rpv-thumbnail__cover">
             {currentDoc ? (
-                <CoverInner doc={currentDoc} getPageIndex={getPageIndex} renderSpinner={renderSpinner} />
+                <CoverInner
+                    doc={currentDoc}
+                    getPageIndex={getPageIndex}
+                    renderSpinner={renderSpinner}
+                    store={store}
+                    width={width}
+                />
             ) : (
                 <div className="rpv-thumbnail__cover-loader">{renderSpinner ? renderSpinner() : <Spinner />}</div>
             )}

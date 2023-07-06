@@ -1,12 +1,11 @@
-import * as React from 'react';
-import { findAllByTitle } from '@testing-library/dom';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
-
 import { Viewer } from '@react-pdf-viewer/core';
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
+import { findAllByTitle } from '@testing-library/dom';
+import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
-import type { FlagKeyword } from '../src/types/FlagKeyword';
+import type { FlagKeyword } from '../src';
 
 const TestKeepHighlight: React.FC<{
     fileUrl: Uint8Array;
@@ -61,8 +60,16 @@ test('Keep highlighting after clicking zoom buttons in the default toolbar', asy
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
+    await findByTestId('core__text-layer-2');
+    await findByTestId('core__annotation-layer-2');
+    await findByTestId('core__text-layer-3');
+    await findByTestId('core__annotation-layer-3');
 
-    const pagesContainer = getByTestId('core__inner-pages');
+    const pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,
@@ -82,10 +89,16 @@ test('Keep highlighting after clicking zoom buttons in the default toolbar', asy
         },
     });
 
+    await findByTestId('core__text-layer-4');
+    await findByTestId('core__annotation-layer-4');
+    await findByTestId('core__text-layer-5');
+    await findByTestId('core__annotation-layer-5');
+
     let page = await findByTestId('core__page-layer-6');
 
     // Wait for the text layer to be rendered completely
     await findByTestId('core__text-layer-6');
+    await findByTestId('core__annotation-layer-6');
 
     let highlights = await findAllByTitle(page, keyword);
     expect(highlights.length).toEqual(3);

@@ -3,10 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import { RotateDirection } from '@react-pdf-viewer/core';
+
 export interface StoreProps {
-    rotation: number;
-    rotate?(degrees: number): void;
+    rotate?(direction: RotateDirection): void;
+    rotatePage?(pageIndex: number, direction: RotateDirection): void;
 }

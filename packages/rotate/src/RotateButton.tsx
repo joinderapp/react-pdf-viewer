@@ -3,15 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { LocalizationMap } from '@react-pdf-viewer/core';
+import { LocalizationContext, MinimalButton, Position, RotateDirection, Tooltip } from '@react-pdf-viewer/core';
 import * as React from 'react';
-import { LocalizationContext, MinimalButton, Position, Tooltip } from '@react-pdf-viewer/core';
-
 import { RotateBackwardIcon } from './RotateBackwardIcon';
 import { RotateForwardIcon } from './RotateForwardIcon';
-import { RotateDirection } from './structs/RotateDirection';
 import type { RenderRotateProps } from './types/RenderRotateProps';
 
 const TOOLTIP_OFFSET = { left: 0, top: 8 };
@@ -19,8 +18,10 @@ const TOOLTIP_OFFSET = { left: 0, top: 8 };
 export const RotateButton: React.FC<RenderRotateProps> = ({ direction, onClick }) => {
     const { l10n } = React.useContext(LocalizationContext);
 
-    const backwardLabel = l10n && l10n.rotate ? l10n.rotate.rotateBackward : 'Rotate counterclockwise';
-    const forwardLabel = l10n && l10n.rotate ? l10n.rotate.rotateForward : 'Rotate clockwise';
+    const backwardLabel =
+        l10n && l10n.rotate ? ((l10n.rotate as LocalizationMap).rotateBackward as string) : 'Rotate counterclockwise';
+    const forwardLabel =
+        l10n && l10n.rotate ? ((l10n.rotate as LocalizationMap).rotateForward as string) : 'Rotate clockwise';
     const label = direction === RotateDirection.Backward ? backwardLabel : forwardLabel;
     const icon = direction === RotateDirection.Backward ? <RotateBackwardIcon /> : <RotateForwardIcon />;
 
@@ -30,7 +31,7 @@ export const RotateButton: React.FC<RenderRotateProps> = ({ direction, onClick }
             position={Position.BottomCenter}
             target={
                 <MinimalButton
-                    ariaLabel={label as string}
+                    ariaLabel={label}
                     testId={
                         direction === RotateDirection.Backward ? 'rotate__backward-button' : 'rotate__forward-button'
                     }

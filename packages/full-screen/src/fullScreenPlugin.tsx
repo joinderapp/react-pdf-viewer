@@ -3,17 +3,17 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { Plugin, PluginFunctions, RenderViewer, Slot, ViewerState } from '@react-pdf-viewer/core';
+import { createStore, FullScreenMode } from '@react-pdf-viewer/core';
 import * as React from 'react';
-import { createStore } from '@react-pdf-viewer/core';
-import type { Plugin, PluginFunctions, RenderViewer, Slot } from '@react-pdf-viewer/core';
-
 import { EnterFullScreen, EnterFullScreenProps } from './EnterFullScreen';
-import { ExitFullScreen, RenderExitFullScreenProps } from './ExitFullScreen';
 import { EnterFullScreenButton } from './EnterFullScreenButton';
 import { EnterFullScreenMenuItem, EnterFullScreenMenuItemProps } from './EnterFullScreenMenuItem';
+import { ExitFullScreen, RenderExitFullScreenProps } from './ExitFullScreen';
+import { FullScreenModeTracker } from './FullScreenModeTracker';
 import { ShortcutHandler } from './ShortcutHandler';
 import type { StoreProps } from './types/StoreProps';
 import type { Zoom } from './types/Zoom';
@@ -46,8 +46,18 @@ export const fullScreenPlugin = (props?: FullScreenPluginProps): FullScreenPlugi
             ),
         []
     );
+
+    const store = React.useMemo(
+        () =>
+            createStore<StoreProps>({
+                enterFullScreenMode: () => {},
+                exitFullScreenMode: () => {},
+                fullScreenMode: FullScreenMode.Normal,
+                zoom: () => {},
+            }),
+        []
+    );
     /* eslint-enable @typescript-eslint/no-empty-function */
-    const store = React.useMemo(() => createStore<StoreProps>({}), []);
 
     const EnterFullScreenDecorator = (props: EnterFullScreenProps) => (
         <EnterFullScreen
@@ -55,8 +65,6 @@ export const fullScreenPlugin = (props?: FullScreenPluginProps): FullScreenPlugi
             enableShortcuts={fullScreenPluginProps.enableShortcuts}
             getFullScreenTarget={getFullScreenTarget}
             store={store}
-            onEnterFullScreen={fullScreenPluginProps.onEnterFullScreen}
-            onExitFullScreen={fullScreenPluginProps.onExitFullScreen}
         />
     );
 
@@ -82,12 +90,7 @@ export const fullScreenPlugin = (props?: FullScreenPluginProps): FullScreenPlugi
     );
 
     const ExitFullScreenDecorator = () => (
-        <ExitFullScreen
-            getFullScreenTarget={getFullScreenTarget}
-            store={store}
-            onEnterFullScreen={fullScreenPluginProps.onEnterFullScreen}
-            onExitFullScreen={fullScreenPluginProps.onExitFullScreen}
-        >
+        <ExitFullScreen getFullScreenTarget={getFullScreenTarget} store={store}>
             {props?.renderExitFullScreenButton}
         </ExitFullScreen>
     );
@@ -102,10 +105,13 @@ export const fullScreenPlugin = (props?: FullScreenPluginProps): FullScreenPlugi
                             containerRef={props.containerRef}
                             getFullScreenTarget={getFullScreenTarget}
                             store={store}
-                            onEnterFullScreen={fullScreenPluginProps.onEnterFullScreen}
-                            onExitFullScreen={fullScreenPluginProps.onExitFullScreen}
                         />
                     )}
+                    <FullScreenModeTracker
+                        store={store}
+                        onEnterFullScreen={fullScreenPluginProps.onEnterFullScreen}
+                        onExitFullScreen={fullScreenPluginProps.onExitFullScreen}
+                    />
                     <ExitFullScreenDecorator />
                     {currentSlot.subSlot.children}
                 </>
@@ -117,8 +123,14 @@ export const fullScreenPlugin = (props?: FullScreenPluginProps): FullScreenPlugi
 
     return {
         install: (pluginFunctions: PluginFunctions) => {
+            store.update('enterFullScreenMode', pluginFunctions.enterFullScreenMode);
+            store.update('exitFullScreenMode', pluginFunctions.exitFullScreenMode);
             store.update('getPagesContainer', pluginFunctions.getPagesContainer);
             store.update('zoom', pluginFunctions.zoom);
+        },
+        onViewerStateChange: (viewerState: ViewerState) => {
+            store.update('fullScreenMode', viewerState.fullScreenMode);
+            return viewerState;
         },
         renderViewer,
         EnterFullScreen: EnterFullScreenDecorator,

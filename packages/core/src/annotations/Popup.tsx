@@ -3,22 +3,25 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
-import { Annotation } from './Annotation';
-import { PopupWrapper } from './PopupWrapper';
 import type { PdfJs } from '../types/PdfJs';
+import { Annotation } from './Annotation';
+import { getContents } from './getContents';
+import { getTitle } from './getTitle';
+import { PopupWrapper } from './PopupWrapper';
 
 export const Popup: React.FC<{
     annotation: PdfJs.Annotation;
     page: PdfJs.Page;
     viewport: PdfJs.ViewPort;
 }> = ({ annotation, page, viewport }) => {
-    const isRenderable = !!(annotation.title || annotation.contents);
+    const title = getTitle(annotation);
+    const contents = getContents(annotation);
+    const isRenderable = !!(title || contents);
 
     // Don't render the popup for annotation whose parent renders the annotation themselves
     const ignoredParents = ['Circle', 'Ink', 'Line', 'Polygon', 'PolyLine', 'Square'];

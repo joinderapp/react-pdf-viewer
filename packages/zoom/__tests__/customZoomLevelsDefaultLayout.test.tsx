@@ -1,9 +1,8 @@
-import * as React from 'react';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
 import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import type { ToolbarProps, ToolbarSlot, TransformToolbarSlot } from '@react-pdf-viewer/toolbar';
-
+import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
 
@@ -51,7 +50,7 @@ test('Custom zoom levels with the default layout', async () => {
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
 
-    const pagesContainer = getByTestId('core__inner-pages');
+    const pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,

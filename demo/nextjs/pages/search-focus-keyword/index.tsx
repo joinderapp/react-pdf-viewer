@@ -1,6 +1,6 @@
-import * as React from 'react';
 import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import * as React from 'react';
 
 const IndexPage = () => {
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
@@ -9,7 +9,7 @@ const IndexPage = () => {
         <div
             style={{
                 height: '720px',
-                margin: '150vh auto 0 auto',
+                margin: '80vh auto 80vh auto',
                 width: '800px',
             }}
         >

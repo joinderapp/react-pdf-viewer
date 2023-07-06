@@ -1,6 +1,6 @@
-import * as React from 'react';
 import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import * as React from 'react';
 
 const IndexPage = () => {
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
@@ -14,7 +14,7 @@ const IndexPage = () => {
                 width: '64rem',
             }}
         >
-            <Viewer fileUrl="/pdf-open-parameters.pdf" plugins={[defaultLayoutPluginInstance]} initialPage={6} />
+            <Viewer fileUrl="/bookmarks-level-1.pdf" plugins={[defaultLayoutPluginInstance]} initialPage={20} />
         </div>
     );
 };

@@ -1,8 +1,7 @@
-import * as React from 'react';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import { Button, Viewer } from '@react-pdf-viewer/core';
 import type { Plugin, RenderViewer } from '@react-pdf-viewer/core';
-
+import { Button, Viewer } from '@react-pdf-viewer/core';
+import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { thumbnailPlugin } from '../src';
 
@@ -71,15 +70,15 @@ test('Test <Cover />', async () => {
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
 
-    const coverLoader = getByTestId('thumbnail__cover-loader');
-    mockIsIntersecting(coverLoader, true);
-    coverLoader['__jsdomMockClientHeight'] = 318;
-    coverLoader['__jsdomMockClientWidth'] = 318;
+    const coverInner = await findByTestId('thumbnail__cover-inner');
+    mockIsIntersecting(coverInner, true);
+    coverInner['__jsdomMockClientHeight'] = 318;
+    coverInner['__jsdomMockClientWidth'] = 318;
 
     const image = await findByTestId('thumbnail__cover-image');
     const src = image.getAttribute('src');
-    expect(src.length).toEqual(61722);
-    expect(src.substring(0, 100)).toEqual(
+    expect(src?.length).toEqual(61722);
+    expect(src?.substring(0, 100)).toEqual(
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAO4AAAE+CAYAAACKpyy5AAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV'
     );
 });
@@ -99,7 +98,7 @@ const TestMultipleCovers = () => {
 };
 
 test('Test multiple <Cover />', async () => {
-    const { findByTestId, getAllByTestId, getByTestId } = render(<TestMultipleCovers />);
+    const { findByTestId, findAllByTestId, getAllByTestId, getByTestId } = render(<TestMultipleCovers />);
 
     // Test the cover of the first document
     const viewerEleList = getAllByTestId('core__viewer');
@@ -110,19 +109,20 @@ test('Test multiple <Cover />', async () => {
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
 
-    let coverLoader = getByTestId('thumbnail__cover-loader');
-    mockIsIntersecting(coverLoader, true);
-    coverLoader['__jsdomMockClientHeight'] = 318;
-    coverLoader['__jsdomMockClientWidth'] = 318;
+    let coverInner = await findByTestId('thumbnail__cover-inner');
+    mockIsIntersecting(coverInner, true);
+    coverInner['__jsdomMockClientHeight'] = 318;
+    coverInner['__jsdomMockClientWidth'] = 318;
 
     let image = await findByTestId('thumbnail__cover-image');
     let src = image.getAttribute('src');
-    expect(src.length).toEqual(12246);
-    expect(src.slice(-100)).toEqual(
-        'IUTbkyebQihIwhVCQRKuEAqScIVQkIQrhIIkXCEUJOEKoSAJVwgFSbhCKEjCFUJBEq4QCvp/uBwJY9su364AAAAASUVORK5CYII='
+    expect(src?.length).toEqual(12154);
+    expect(src?.slice(-100)).toEqual(
+        'IeqfHGwKoSAJVwgFSbhCKEjCFUJBEq4QCpJwhVCQhCuEgiRcIRQk4QqhIAlXCAVJuEIo6P8DgxmhOluzxw0AAAAASUVORK5CYII='
     );
 
     // So we can query the cover of second document
+    coverInner.removeAttribute('data-testid');
     image.removeAttribute('data-testid');
 
     // Test the cover of the second document
@@ -133,15 +133,15 @@ test('Test multiple <Cover />', async () => {
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
 
-    coverLoader = getByTestId('thumbnail__cover-loader');
-    mockIsIntersecting(coverLoader, true);
-    coverLoader['__jsdomMockClientHeight'] = 318;
-    coverLoader['__jsdomMockClientWidth'] = 318;
+    coverInner = await findByTestId('thumbnail__cover-inner');
+    mockIsIntersecting(coverInner, true);
+    coverInner['__jsdomMockClientHeight'] = 318;
+    coverInner['__jsdomMockClientWidth'] = 318;
 
     image = await findByTestId('thumbnail__cover-image');
     src = image.getAttribute('src');
-    expect(src.length).toEqual(1998);
-    expect(src.slice(-100)).toEqual(
+    expect(src?.length).toEqual(1998);
+    expect(src?.slice(-100)).toEqual(
         'ETXEiBpiRA0xooYYUUOMqCFG1BAjaogRNcSIGmJEDTGihhhRQ4yoIUbUECNqiBE1xIgaYv4DB66eMUgszcEAAAAASUVORK5CYII='
     );
 });
@@ -193,38 +193,38 @@ test('Test <Cover /> with dynamic document', async () => {
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
 
-    let coverLoader = getByTestId('thumbnail__cover-loader');
-    mockIsIntersecting(coverLoader, true);
-    coverLoader['__jsdomMockClientHeight'] = 318;
-    coverLoader['__jsdomMockClientWidth'] = 318;
+    let coverInner = await findByTestId('thumbnail__cover-inner');
+    mockIsIntersecting(coverInner, true);
+    coverInner['__jsdomMockClientHeight'] = 318;
+    coverInner['__jsdomMockClientWidth'] = 318;
 
     let image = await findByTestId('thumbnail__cover-image');
     let src = image.getAttribute('src');
-    expect(src.length).toEqual(11662);
-    expect(src.slice(-100)).toEqual(
+    expect(src?.length).toEqual(11662);
+    expect(src?.slice(-100)).toEqual(
         'K2IgBVfEQAquiIEUXBEDKbgiBlJwRQyk4IoYSMEVMZCCK2IgBVfEQAquiIEUXBEDKbgiBvof61fzlJ7KkmoAAAAASUVORK5CYII='
     );
 
-    // Click the `Load document 2` button
-    fireEvent.click(getByText('Load document 2'));
-
-    viewerEle = getByTestId('core__viewer');
+    viewerEle = await findByTestId('core__viewer');
     mockIsIntersecting(viewerEle, true);
     viewerEle['__jsdomMockClientHeight'] = 318;
     viewerEle['__jsdomMockClientWidth'] = 318;
 
+    // Click the `Load document 2` button
+    fireEvent.click(getByText('Load document 2'));
+
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
 
-    coverLoader = getByTestId('thumbnail__cover-loader');
-    mockIsIntersecting(coverLoader, true);
-    coverLoader['__jsdomMockClientHeight'] = 318;
-    coverLoader['__jsdomMockClientWidth'] = 318;
+    coverInner = await findByTestId('thumbnail__cover-inner');
+    mockIsIntersecting(coverInner, true);
+    coverInner['__jsdomMockClientHeight'] = 318;
+    coverInner['__jsdomMockClientWidth'] = 318;
 
     image = await findByTestId('thumbnail__cover-image');
     src = image.getAttribute('src');
-    expect(src.length).toEqual(1998);
-    expect(src.slice(-100)).toEqual(
+    expect(src?.length).toEqual(1998);
+    expect(src?.slice(-100)).toEqual(
         'ETXEiBpiRA0xooYYUUOMqCFG1BAjaogRNcSIGmJEDTGihhhRQ4yoIUbUECNqiBE1xIgaYv4DB66eMUgszcEAAAAASUVORK5CYII='
     );
 });

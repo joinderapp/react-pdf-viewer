@@ -1,9 +1,8 @@
-import * as React from 'react';
-import { fireEvent, render } from '@testing-library/react';
 import { Viewer } from '@react-pdf-viewer/core';
-
+import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
-import { zoomPlugin } from '../src/index';
+import { zoomPlugin } from '../src';
 
 const TestZoomPopoverLevels: React.FC<{
     fileUrl: Uint8Array;
@@ -47,7 +46,17 @@ test('Custom zoom levels with <ZoomPopover />', async () => {
     const { findByTestId, findByText, getByRole, getByTestId } = render(
         <TestZoomPopoverLevels fileUrl={global['__OPEN_PARAMS_PDF__']} />
     );
-    mockIsIntersecting(getByTestId('core__viewer'), true);
+
+    const viewerEle = getByTestId('core__viewer');
+    mockIsIntersecting(viewerEle, true);
+    viewerEle['__jsdomMockClientHeight'] = 720;
+    viewerEle['__jsdomMockClientWidth'] = 640;
+
+    // Wait until the document is loaded completely
+    await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__text-layer-2');
 
     // Zoom the document
     let zoomButton = await getByRole('button', { name: 'Zoom document' });

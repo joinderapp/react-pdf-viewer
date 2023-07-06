@@ -3,7 +3,7 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 .rpv-core__doc-error {
@@ -28,12 +28,16 @@
 }
 
 .rpv-core__doc-loading {
-    align-items: center;
     background-color: var(--rpv-core__doc-loading-background-color);
+
+    align-items: center;    
     display: flex;
-    height: 100%;
     justify-content: center;
+    
+    height: 100%;
     width: 100%;
+
+    min-height: inherit;
 
     &--rtl {
         direction: rtl;

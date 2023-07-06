@@ -3,12 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap } from '@react-pdf-viewer/core';
 import { classNames, LocalizationContext, MinimalButton, TextDirection, ThemeContext } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { ExitFullScreenIcon } from './ExitFullScreenIcon';
 
 export const ExitFullScreenButton: React.FC<{
@@ -18,7 +18,8 @@ export const ExitFullScreenButton: React.FC<{
     const { direction } = React.useContext(ThemeContext);
     const isRtl = direction === TextDirection.RightToLeft;
 
-    const exitFullScreenLabel = l10n && l10n.fullScreen ? l10n.fullScreen.exitFullScreen : 'Exit full screen';
+    const exitFullScreenLabel =
+        l10n && l10n.fullScreen ? ((l10n.fullScreen as LocalizationMap).exitFullScreen as string) : 'Exit full screen';
 
     return (
         <div

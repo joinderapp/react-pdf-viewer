@@ -1,6 +1,6 @@
-import * as React from 'react';
 import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import * as React from 'react';
 
 const IndexPage = () => {
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
@@ -10,11 +10,10 @@ const IndexPage = () => {
             style={{
                 display: 'flex',
                 height: '50rem',
-                margin: '5rem auto',
                 width: '64rem',
             }}
         >
-            <Viewer fileUrl="/pdf-open-parameters-rotated.pdf" plugins={[defaultLayoutPluginInstance]} />
+            <Viewer defaultScale={0.5} fileUrl="/different-dimensions.pdf" plugins={[defaultLayoutPluginInstance]} />
         </div>
     );
 };

@@ -1,12 +1,11 @@
-import * as React from 'react';
-import { findAllByTitle } from '@testing-library/dom';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-
 import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { findAllByTitle } from '@testing-library/dom';
+import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
-import type { FlagKeyword } from '../src/types/FlagKeyword';
+import type { FlagKeyword } from '../src';
 
 const TestKeepHighlight: React.FC<{
     fileUrl: Uint8Array;
@@ -47,8 +46,11 @@ test('Keep highlighting after zooming', async () => {
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__text-layer-2');
 
-    const pagesContainer = getByTestId('core__inner-pages');
+    const pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,

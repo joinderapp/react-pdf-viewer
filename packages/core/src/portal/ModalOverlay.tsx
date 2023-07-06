@@ -3,9 +3,11 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
 
-export const ModalOverlay: React.FC = ({ children }) => <div className="rpv-core__modal-overlay">{children}</div>;
+export const ModalOverlay: React.FC<{
+    children?: React.ReactNode;
+}> = ({ children }) => <div className="rpv-core__modal-overlay">{children}</div>;

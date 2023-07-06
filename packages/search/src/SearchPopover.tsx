@@ -3,13 +3,13 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap, Store } from '@react-pdf-viewer/core';
 import {
-    classNames,
     Button,
+    classNames,
     LocalizationContext,
     MinimalButton,
     Position,
@@ -19,12 +19,11 @@ import {
     ThemeContext,
     Tooltip,
 } from '@react-pdf-viewer/core';
-import type { Store } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { NextIcon } from './NextIcon';
 import { PreviousIcon } from './PreviousIcon';
-import { useSearch } from './useSearch';
 import type { StoreProps } from './types/StoreProps';
+import { useSearch } from './useSearch';
 
 const PORTAL_OFFSET = { left: 0, top: 8 };
 
@@ -35,6 +34,7 @@ export const SearchPopover: React.FC<{
     const { l10n } = React.useContext(LocalizationContext);
     const { direction } = React.useContext(ThemeContext);
     const [isQuerying, setIsQuerying] = React.useState(false);
+    const [searchDone, setSearchDone] = React.useState(false);
     const isRtl = direction === TextDirection.RightToLeft;
 
     const {
@@ -52,20 +52,30 @@ export const SearchPopover: React.FC<{
         setKeyword,
     } = useSearch(store);
 
+    const performSearch = (cb?: () => void) => {
+        setIsQuerying(true);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        search().then((_) => {
+            setIsQuerying(false);
+            setSearchDone(true);
+            cb && cb();
+        });
+    };
+
     const onKeydownSearch = (e: React.KeyboardEvent<HTMLInputElement>): void => {
         // Press the Enter key
         if (e.key === 'Enter' && keyword) {
-            setIsQuerying(true);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            search().then((_) => setIsQuerying(false));
+            searchDone ? jumpToNextMatch() : performSearch();
         }
     };
 
     const onChangeMatchCase = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        setSearchDone(false);
         changeMatchCase(e.target.checked);
     };
 
     const onChangeWholeWords = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        setSearchDone(false);
         changeWholeWords(e.target.checked);
     };
 
@@ -74,9 +84,26 @@ export const SearchPopover: React.FC<{
         clearKeyword();
     };
 
-    const searchLabel = (l10n && l10n.search ? l10n.search.enterToSearch : 'Enter to search') as string;
-    const previousMatchLabel = l10n && l10n.search ? l10n.search.previousMatch : 'Previous match';
-    const nextMatchLabel = l10n && l10n.search ? l10n.search.nextMatch : 'Next match';
+    const onChangeKeyword = (value: string) => {
+        setSearchDone(false);
+        setKeyword(value);
+    };
+
+    React.useEffect(() => {
+        const initialKeyword = store.get('initialKeyword');
+        if (initialKeyword && initialKeyword.length === 1 && keyword) {
+            performSearch(() => {
+                store.update('initialKeyword', []);
+            });
+        }
+    }, []);
+
+    const searchLabel =
+        l10n && l10n.search ? ((l10n.search as LocalizationMap).enterToSearch as string) : 'Enter to search';
+    const previousMatchLabel =
+        l10n && l10n.search ? ((l10n.search as LocalizationMap).previousMatch as string) : 'Previous match';
+    const nextMatchLabel = l10n && l10n.search ? ((l10n.search as LocalizationMap).nextMatch as string) : 'Next match';
+    const closeButtonLabel = l10n && l10n.search ? ((l10n.search as LocalizationMap).close as string) : 'Close';
 
     return (
         <div className="rpv-search__popover">
@@ -87,7 +114,7 @@ export const SearchPopover: React.FC<{
                     placeholder={searchLabel}
                     type="text"
                     value={keyword}
-                    onChange={setKeyword}
+                    onChange={onChangeKeyword}
                     onKeyDown={onKeydownSearch}
                 />
                 <div
@@ -97,9 +124,9 @@ export const SearchPopover: React.FC<{
                         'rpv-search__popover-counter--rtl': isRtl,
                     })}
                 >
-                    {isQuerying && <Spinner size="1rem" />}
+                    {isQuerying && <Spinner testId="search__popover-searching" size="1rem" />}
                     {!isQuerying && (
-                        <span>
+                        <span data-testid="search__popover-num-matches">
                             {currentMatch}/{numberOfMatches}
                         </span>
                     )}
@@ -108,20 +135,22 @@ export const SearchPopover: React.FC<{
             <label className="rpv-search__popover-label">
                 <input
                     className="rpv-search__popover-label-checkbox"
+                    data-testid="search__popover-match-case"
                     checked={matchCase}
                     type="checkbox"
                     onChange={onChangeMatchCase}
                 />{' '}
-                {l10n && l10n.search ? l10n.search.matchCase : 'Match case'}
+                {l10n && l10n.search ? ((l10n.search as LocalizationMap).matchCase as string) : 'Match case'}
             </label>
             <label className="rpv-search__popover-label">
                 <input
                     className="rpv-search__popover-label-checkbox"
                     checked={wholeWords}
+                    data-testid="search__popover-whole-words"
                     type="checkbox"
                     onChange={onChangeWholeWords}
                 />{' '}
-                {l10n && l10n.search ? l10n.search.wholeWords : 'Whole words'}
+                {l10n && l10n.search ? ((l10n.search as LocalizationMap).wholeWords as string) : 'Whole words'}
             </label>
             <div className="rpv-search__popover-footer">
                 <div className="rpv-search__popover-footer-item">
@@ -165,7 +194,7 @@ export const SearchPopover: React.FC<{
                         'rpv-search__popover-footer-button--rtl': isRtl,
                     })}
                 >
-                    <Button onClick={onClose}>{l10n && l10n.search ? l10n.search.close : 'Close'}</Button>
+                    <Button onClick={onClose}>{closeButtonLabel}</Button>
                 </div>
             </div>
         </div>

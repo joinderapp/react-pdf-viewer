@@ -3,11 +3,10 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { CheckIcon } from '../icons/CheckIcon';
 import { CommentIcon } from '../icons/CommentIcon';
 import { HelpIcon } from '../icons/HelpIcon';
@@ -15,10 +14,12 @@ import { KeyIcon } from '../icons/KeyIcon';
 import { NoteIcon } from '../icons/NoteIcon';
 import { ParagraphIcon } from '../icons/ParagraphIcon';
 import { TriangleIcon } from '../icons/TriangleIcon';
+import type { PdfJs } from '../types/PdfJs';
 import { Annotation } from './Annotation';
 import { AnnotationType } from './AnnotationType';
+import { getContents } from './getContents';
+import { getTitle } from './getTitle';
 import { Popup } from './Popup';
-import type { PdfJs } from '../types/PdfJs';
 
 export const Text: React.FC<{
     annotation: PdfJs.Annotation;
@@ -27,7 +28,9 @@ export const Text: React.FC<{
     viewport: PdfJs.ViewPort;
 }> = ({ annotation, childAnnotation, page, viewport }) => {
     const hasPopup = annotation.hasPopup === false;
-    const isRenderable = !!(annotation.hasPopup || annotation.title || annotation.contents);
+    const title = getTitle(annotation);
+    const contents = getContents(annotation);
+    const isRenderable = !!(annotation.hasPopup || title || contents);
     const name = annotation.name ? annotation.name.toLowerCase() : '';
 
     return (

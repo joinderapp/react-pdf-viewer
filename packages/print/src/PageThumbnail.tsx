@@ -3,22 +3,34 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { PdfJs } from '@react-pdf-viewer/core';
+import { useIsMounted } from '@react-pdf-viewer/core';
+import * as React from 'react';
+import { isRunningInJest } from './isRunningInJest';
 
 export const PageThumbnail: React.FC<{
     canvas: HTMLCanvasElement;
     page: PdfJs.Page;
     pageHeight: number;
+    pageIndex: number;
     pageWidth: number;
     rotation: number;
     onLoad(): void;
-}> = ({ canvas, page, pageHeight, pageWidth, rotation, onLoad }) => {
+}> = ({ canvas, page, pageHeight, pageIndex, pageWidth, rotation, onLoad }) => {
+    const isMounted = useIsMounted();
     const renderTask = React.useRef<PdfJs.PageRenderTask>();
     const [src, setSrc] = React.useState('');
+    const testWithJest = React.useMemo(() => isRunningInJest(), []);
+
+    const handleImageLoad = () => {
+        // The `onload` event isn't triggered in Jest environment
+        if (!testWithJest) {
+            onLoad();
+        }
+    };
 
     React.useEffect(() => {
         const task = renderTask.current;
@@ -45,11 +57,16 @@ export const PageThumbnail: React.FC<{
         });
         renderTask.current.promise.then(
             () => {
-                'toBlob' in canvas
-                    ? canvas.toBlob((blob) => {
-                          setSrc(URL.createObjectURL(blob));
-                      })
-                    : setSrc((canvas as HTMLCanvasElement).toDataURL());
+                // `URL.createObjectURL` is not available in jest-dom yet
+                if ('toBlob' in canvas && 'createObjectURL' in URL) {
+                    canvas.toBlob((blob) => {
+                        isMounted.current && setSrc(URL.createObjectURL(blob));
+                        testWithJest && onLoad();
+                    });
+                } else {
+                    isMounted.current && setSrc(canvas.toDataURL());
+                    testWithJest && onLoad();
+                }
             },
             () => {
                 /**/
@@ -60,7 +77,7 @@ export const PageThumbnail: React.FC<{
     return (
         src && (
             <div className="rpv-print__page">
-                <img src={src} onLoad={() => onLoad()} />
+                <img data-testid={`print__thumbnail-${pageIndex}`} src={src} onLoad={handleImageLoad} />
             </div>
         )
     );

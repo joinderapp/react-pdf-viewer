@@ -3,12 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
 
-export function usePrevious<T>(value: T) {
+export const usePrevious = <T>(value: T): T => {
     const ref = React.useRef<T>(value);
 
     React.useEffect(() => {
@@ -16,4 +16,4 @@ export function usePrevious<T>(value: T) {
     }, [value]);
 
     return ref.current;
-}
+};

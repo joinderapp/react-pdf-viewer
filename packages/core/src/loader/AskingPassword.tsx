@@ -3,24 +3,26 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
-import { SubmitPassword } from './AskForPasswordState';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TextBox } from '../components/TextBox';
 import { LocalizationContext } from '../localization/LocalizationContext';
+import { PasswordStatus } from '../structs/PasswordStatus';
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
+import type { DocumentAskPasswordEvent } from '../types/DocumentAskPasswordEvent';
+import type { LocalizationMap } from '../types/LocalizationMap';
+import type { RenderProtectedView } from '../types/RenderProtectedView';
 import { classNames } from '../utils/classNames';
-import type { DocumentAskPasswordEvent, VerifyPassword } from '../types/DocumentAskPasswordEvent';
 
 export const AskingPassword: React.FC<{
-    submitPassword: SubmitPassword;
-    verifyPassword: VerifyPassword;
+    passwordStatus: PasswordStatus;
+    renderProtectedView?: RenderProtectedView;
+    verifyPassword: (password: string) => void;
     onDocumentAskPassword?(e: DocumentAskPasswordEvent): void;
-}> = ({ submitPassword, verifyPassword, onDocumentAskPassword }) => {
+}> = ({ passwordStatus, renderProtectedView, verifyPassword, onDocumentAskPassword }) => {
     const { l10n } = React.useContext(LocalizationContext);
     const [password, setPassword] = React.useState('');
     const { direction } = React.useContext(ThemeContext);
@@ -42,6 +44,13 @@ export const AskingPassword: React.FC<{
         }
     }, []);
 
+    if (renderProtectedView) {
+        return renderProtectedView({
+            passwordStatus,
+            verifyPassword,
+        });
+    }
+
     return (
         <div className="rpv-core__asking-password-wrapper">
             <div
@@ -51,9 +60,11 @@ export const AskingPassword: React.FC<{
                 })}
             >
                 <div className="rpv-core__asking-password-message">
-                    {submitPassword === SubmitPassword.REQUIRE_PASSWORD &&
-                        l10n.core.askingPassword.requirePasswordToOpen}
-                    {submitPassword === SubmitPassword.WRONG_PASSWORD && l10n.core.wrongPassword.tryAgain}
+                    {passwordStatus === PasswordStatus.RequiredPassword &&
+                        (((l10n.core as LocalizationMap).askingPassword as LocalizationMap)
+                            .requirePasswordToOpen as string)}
+                    {passwordStatus === PasswordStatus.WrongPassword &&
+                        (((l10n.core as LocalizationMap).wrongPassword as LocalizationMap).tryAgain as string)}
                 </div>
                 <div className="rpv-core__asking-password-body">
                     <div
@@ -71,7 +82,9 @@ export const AskingPassword: React.FC<{
                             onKeyDown={handleKeyDown}
                         />
                     </div>
-                    <PrimaryButton onClick={submit}>{l10n.core.askingPassword.submit}</PrimaryButton>
+                    <PrimaryButton onClick={submit}>
+                        {((l10n.core as LocalizationMap).askingPassword as LocalizationMap).submit as string}
+                    </PrimaryButton>
                 </div>
             </div>
         </div>

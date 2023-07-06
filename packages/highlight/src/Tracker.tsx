@@ -3,22 +3,26 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { Store } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { HIGHLIGHT_LAYER_ATTR, HIGHLIGHT_PAGE_ATTR } from './constants';
 import { getRectFromOffsets } from './getRectFromOffsets';
 import { getTextFromOffsets } from './getTextFromOffsets';
-import { NO_SELECTION_STATE, SELECTING_STATE, SelectedState } from './HighlightState';
 import { SelectionRange } from './structs/SelectionRange';
+import { Trigger } from './structs/Trigger';
 import { transformArea } from './transformArea';
-import { useRotation } from './useRotation';
+import { DivText } from './types/DivText';
 import type { HighlightArea } from './types/HighlightArea';
+import { HighlightStateType } from './types/HighlightState';
 import type { SelectionData } from './types/SelectionData';
 import type { StoreProps } from './types/StoreProps';
+import { useRotation } from './useRotation';
+
+// `\n` is the document selection string when double clicking a page without selecting any text
+const EMPTY_SELECTION = ['', '\n'];
 
 export const Tracker: React.FC<{
     store: Store<StoreProps>;
@@ -26,6 +30,7 @@ export const Tracker: React.FC<{
     const { rotation } = useRotation(store);
     const pagesRef = React.useRef<HTMLElement | null>(null);
     const [arePagesFound, setPagesFound] = React.useState(false);
+    const [trigger, setTrigger] = React.useState(store.get('trigger'));
 
     const handlePagesContainer = (getPagesContainer: () => HTMLElement) => {
         const ele = getPagesContainer();
@@ -33,15 +38,18 @@ export const Tracker: React.FC<{
         setPagesFound(!!ele);
     };
 
+    const handleTrigger = (trigger: Trigger) => setTrigger(trigger);
+
     const onMouseUpHandler = () => {
         // Get the current selection
         const selection = document.getSelection();
 
         const highlightState = store.get('highlightState');
         const hasSelection =
-            (highlightState === NO_SELECTION_STATE || highlightState === SELECTING_STATE) &&
+            (highlightState.type === HighlightStateType.NoSelection ||
+                highlightState.type === HighlightStateType.Selected) &&
             selection.rangeCount > 0 &&
-            selection.toString() !== '';
+            EMPTY_SELECTION.indexOf(selection.toString()) === -1;
         if (!hasSelection) {
             return;
         }
@@ -53,7 +61,12 @@ export const Tracker: React.FC<{
             parentEndContainer instanceof HTMLElement && parentEndContainer.hasAttribute(HIGHLIGHT_LAYER_ATTR);
 
         let endDiv: Node, endOffset: number;
-        if (shouldIgnoreEndContainer && range.endOffset == 0) {
+
+        // Detect double-click
+        if (startDiv && startDiv.parentNode == range.endContainer) {
+            endDiv = startDiv;
+            endOffset = endDiv.textContent.length;
+        } else if (shouldIgnoreEndContainer && range.endOffset == 0) {
             endDiv = range.endContainer.previousSibling;
             endOffset = endDiv.textContent.length;
         } else if (shouldIgnoreEndContainer) {
@@ -68,8 +81,8 @@ export const Tracker: React.FC<{
             return;
         }
 
-        const startPageIdx = parseInt(startDiv.getAttribute(HIGHLIGHT_PAGE_ATTR), 10);
-        const endPageIdx = parseInt(endDiv.getAttribute(HIGHLIGHT_PAGE_ATTR), 10);
+        const startPageIndex = parseInt(startDiv.getAttribute(HIGHLIGHT_PAGE_ATTR), 10);
+        const endPageIndex = parseInt(endDiv.getAttribute(HIGHLIGHT_PAGE_ATTR), 10);
 
         const startTextLayer = startDiv.parentElement;
         const endTextLayer = endDiv.parentElement;
@@ -78,18 +91,20 @@ export const Tracker: React.FC<{
         const startDivSiblings: HTMLElement[] = [].slice.call(
             startTextLayer.querySelectorAll(`[${HIGHLIGHT_PAGE_ATTR}]`)
         );
-        const startDivIdx = startDivSiblings.indexOf(startDiv);
+        const startDivIndex = startDivSiblings.indexOf(startDiv);
 
         const endPageRect = endTextLayer.getBoundingClientRect();
         const endDivSiblings: HTMLElement[] = [].slice.call(endTextLayer.querySelectorAll(`[${HIGHLIGHT_PAGE_ATTR}]`));
-        const endDivIdx = endDivSiblings.indexOf(endDiv);
+        const endDivIndex = endDivSiblings.indexOf(endDiv);
+
+        const startOffset = range.startOffset;
 
         let rangeType: SelectionRange = SelectionRange.DifferentPages;
         switch (true) {
-            case startPageIdx === endPageIdx && startDivIdx === endDivIdx:
+            case startPageIndex === endPageIndex && startDivIndex === endDivIndex:
                 rangeType = SelectionRange.SameDiv;
                 break;
-            case startPageIdx === endPageIdx && startDivIdx < endDivIdx:
+            case startPageIndex === endPageIndex && startDivIndex < endDivIndex:
                 rangeType = SelectionRange.DifferentDivs;
                 break;
             default:
@@ -106,12 +121,12 @@ export const Tracker: React.FC<{
         switch (rangeType) {
             case SelectionRange.SameDiv:
                 // eslint-disable-next-line no-case-declarations
-                const rect = getRectFromOffsets(startDiv, range.startOffset, endOffset);
+                const rect = getRectFromOffsets(startDiv, startOffset, endOffset);
                 highlightAreas = [
                     {
                         height: (rect.height * 100) / startPageRect.height,
                         left: ((rect.left - startPageRect.left) * 100) / startPageRect.width,
-                        pageIndex: startPageIdx,
+                        pageIndex: startPageIndex,
                         top: ((rect.top - startPageRect.top) * 100) / startPageRect.height,
                         width: (rect.width * 100) / startPageRect.width,
                     },
@@ -119,14 +134,14 @@ export const Tracker: React.FC<{
                 break;
 
             case SelectionRange.DifferentDivs:
-                highlightAreas = [getRectFromOffsets(startDiv, range.startOffset, startDiv.textContent.length)]
-                    .concat(getRectBetween(startDivIdx + 1, endDivIdx - 1, startDivSiblings))
+                highlightAreas = [getRectFromOffsets(startDiv, startOffset, startDiv.textContent.length)]
+                    .concat(getRectBetween(startDivIndex + 1, endDivIndex - 1, startDivSiblings))
                     .concat([getRectFromOffsets(endDiv, 0, endOffset)])
                     .map((rect) => {
                         return {
                             height: (rect.height * 100) / startPageRect.height,
                             left: ((rect.left - startPageRect.left) * 100) / startPageRect.width,
-                            pageIndex: startPageIdx,
+                            pageIndex: startPageIndex,
                             top: ((rect.top - startPageRect.top) * 100) / startPageRect.height,
                             width: (rect.width * 100) / startPageRect.width,
                         };
@@ -135,25 +150,25 @@ export const Tracker: React.FC<{
 
             case SelectionRange.DifferentPages:
                 // eslint-disable-next-line no-case-declarations
-                const startAreas = [getRectFromOffsets(startDiv, range.startOffset, startDiv.textContent.length)]
-                    .concat(getRectBetween(startDivIdx + 1, startDivSiblings.length - 1, startDivSiblings))
+                const startAreas = [getRectFromOffsets(startDiv, startOffset, startDiv.textContent.length)]
+                    .concat(getRectBetween(startDivIndex + 1, startDivSiblings.length - 1, startDivSiblings))
                     .map((rect) => {
                         return {
                             height: (rect.height * 100) / startPageRect.height,
                             left: ((rect.left - startPageRect.left) * 100) / startPageRect.width,
-                            pageIndex: startPageIdx,
+                            pageIndex: startPageIndex,
                             top: ((rect.top - startPageRect.top) * 100) / startPageRect.height,
                             width: (rect.width * 100) / startPageRect.width,
                         };
                     });
                 // eslint-disable-next-line no-case-declarations
-                const endAreas = getRectBetween(0, endDivIdx - 1, endDivSiblings)
+                const endAreas = getRectBetween(0, endDivIndex - 1, endDivSiblings)
                     .concat([getRectFromOffsets(endDiv, 0, endOffset)])
                     .map((rect) => {
                         return {
                             height: (rect.height * 100) / endPageRect.height,
                             left: ((rect.left - endPageRect.left) * 100) / endPageRect.width,
-                            pageIndex: endPageIdx,
+                            pageIndex: endPageIndex,
                             top: ((rect.top - endPageRect.top) * 100) / endPageRect.height,
                             width: (rect.width * 100) / endPageRect.width,
                         };
@@ -164,34 +179,51 @@ export const Tracker: React.FC<{
 
         // Determine the selected text
         let selectedText = '';
+        let divTexts: DivText[] = [];
         switch (rangeType) {
             case SelectionRange.SameDiv:
-                selectedText = getTextFromOffsets(
-                    startTextLayer,
-                    startDivIdx,
-                    range.startOffset,
-                    startDivIdx,
+                // eslint-disable-next-line no-case-declarations
+                const textDataSameDiv = getTextFromOffsets(
+                    startDivSiblings,
+                    startPageIndex,
+                    startDivIndex,
+                    startOffset,
+                    startDivIndex,
                     endOffset
                 );
+                selectedText = textDataSameDiv.wholeText;
+                divTexts = textDataSameDiv.divTexts;
                 break;
 
             case SelectionRange.DifferentDivs:
-                selectedText = getTextFromOffsets(startTextLayer, startDivIdx, range.startOffset, endDivIdx, endOffset);
+                // eslint-disable-next-line no-case-declarations
+                const textDataDifferentDivs = getTextFromOffsets(
+                    startDivSiblings,
+                    startPageIndex,
+                    startDivIndex,
+                    startOffset,
+                    endDivIndex,
+                    endOffset
+                );
+                selectedText = textDataDifferentDivs.wholeText;
+                divTexts = textDataDifferentDivs.divTexts;
                 break;
 
             case SelectionRange.DifferentPages:
                 // eslint-disable-next-line no-case-declarations
-                const startText = getTextFromOffsets(
-                    startTextLayer,
-                    startDivIdx,
-                    range.startOffset,
+                const startTextData = getTextFromOffsets(
+                    startDivSiblings,
+                    startPageIndex,
+                    startDivIndex,
+                    startOffset,
                     startDivSiblings.length
                 );
 
                 // eslint-disable-next-line no-case-declarations
-                const endText = getTextFromOffsets(endTextLayer, 0, 0, endDivIdx, endOffset);
+                const endTextData = getTextFromOffsets(endDivSiblings, endPageIndex, 0, 0, endDivIndex, endOffset);
 
-                selectedText = `${startText}\n${endText}`;
+                selectedText = `${startTextData.wholeText}\n${endTextData.wholeText}`;
+                divTexts = startTextData.divTexts.concat(endTextData.divTexts);
                 break;
         }
 
@@ -203,35 +235,36 @@ export const Tracker: React.FC<{
             selectionRegion = {
                 height: (endDivRect.height * 100) / endPageRect.height,
                 left: ((endDivRect.left - endPageRect.left) * 100) / endPageRect.width,
-                pageIndex: endPageIdx,
+                pageIndex: endPageIndex,
                 top: ((endDivRect.top - endPageRect.top) * 100) / endPageRect.height,
                 width: (endDivRect.width * 100) / endPageRect.width,
             };
         }
 
         const selectionData: SelectionData = {
-            startPageIndex: startPageIdx - 1,
-            endPageIndex: endPageIdx - 1,
-            startOffset: range.startOffset,
-            startDivIndex: startDivIdx,
+            divTexts,
+            selectedText,
+            startPageIndex,
+            endPageIndex,
+            startOffset,
+            startDivIndex,
             endOffset,
-            endDivIndex: endDivIdx,
+            endDivIndex,
         };
 
-        store.update(
-            'highlightState',
-            new SelectedState(
-                selectedText,
-                highlightAreas.map((area) => transformArea(area, rotation)),
-                selectionData,
-                selectionRegion
-            )
-        );
+        const selectedState = {
+            type: HighlightStateType.Selected,
+            selectedText,
+            highlightAreas: highlightAreas.map((area) => transformArea(area, rotation)),
+            selectionData,
+            selectionRegion,
+        };
+        store.update('highlightState', selectedState);
     };
 
     React.useEffect(() => {
         const ele = pagesRef.current;
-        if (!ele) {
+        if (!ele || trigger === Trigger.None) {
             return;
         }
 
@@ -239,13 +272,15 @@ export const Tracker: React.FC<{
         return (): void => {
             ele.removeEventListener('mouseup', onMouseUpHandler);
         };
-    }, [arePagesFound, rotation]);
+    }, [arePagesFound, trigger, rotation]);
 
     React.useEffect(() => {
         store.subscribe('getPagesContainer', handlePagesContainer);
+        store.subscribe('trigger', handleTrigger);
 
         return (): void => {
             store.unsubscribe('getPagesContainer', handlePagesContainer);
+            store.unsubscribe('trigger', handleTrigger);
         };
     }, []);
 

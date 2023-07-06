@@ -3,19 +3,19 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { Spinner } from '../components/Spinner';
 import { ScrollMode } from '../structs/ScrollMode';
+import { ViewMode } from '../structs/ViewMode';
 import { SpecialZoomLevel } from '../structs/SpecialZoomLevel';
+import type { PageSize } from '../types/PageSize';
+import type { PdfJs } from '../types/PdfJs';
 import { getPage } from '../utils/managePages';
 import { decrease } from '../zoom/zoomingLevel';
 import { calculateScale } from './calculateScale';
-import type { PageSize } from '../types/PageSize';
-import type { PdfJs } from '../types/PdfJs';
 
 // The height that can be reserved for additional elements such as toolbar
 const RESERVE_HEIGHT = 45;
@@ -26,26 +26,46 @@ const RESERVE_WIDTH = 45;
 export const PageSizeCalculator: React.FC<{
     defaultScale?: number | SpecialZoomLevel;
     doc: PdfJs.PdfDocument;
-    render(pageSize: PageSize): React.ReactElement;
+    render(pageSizes: PageSize[], initialScale: number): React.ReactElement;
     scrollMode: ScrollMode;
-}> = ({ defaultScale, doc, render, scrollMode }) => {
+    viewMode: ViewMode;
+}> = ({ defaultScale, doc, render, scrollMode, viewMode }) => {
     const pagesRef = React.useRef<HTMLDivElement>();
-    const [pageSize, setPageSize] = React.useState<PageSize>({
-        pageHeight: 0,
-        pageWidth: 0,
-        scale: 1,
+    const [state, setState] = React.useState<{
+        pageSizes: PageSize[];
+        scale: number;
+    }>({
+        pageSizes: [],
+        scale: 0,
     });
 
     React.useLayoutEffect(() => {
-        getPage(doc, 0).then((pdfPage) => {
-            const viewport = pdfPage.getViewport({ scale: 1 });
-            const w = viewport.width;
-            const h = viewport.height;
-
+        const queryPageSizes = Array(doc.numPages)
+            .fill(0)
+            .map(
+                (_, i) =>
+                    new Promise<PageSize>((resolve, _) => {
+                        getPage(doc, i).then((pdfPage) => {
+                            const viewport = pdfPage.getViewport({ scale: 1 });
+                            resolve({
+                                pageHeight: viewport.height,
+                                pageWidth: viewport.width,
+                                rotation: viewport.rotation,
+                            });
+                        });
+                    })
+            );
+        Promise.all(queryPageSizes).then((pageSizes) => {
+            // Determine the initial scale
             const pagesEle = pagesRef.current;
-            if (!pagesEle) {
+            if (!pagesEle || pageSizes.length === 0) {
                 return;
             }
+
+            // Get the dimension of the first page
+            const w = pageSizes[0].pageWidth;
+            const h = pageSizes[0].pageHeight;
+
             // The `pagesRef` element will be destroyed when the size calculation is completed
             // To make it more easy for testing, we take the parent element which is always visible
             const parentEle = pagesEle.parentElement;
@@ -67,24 +87,19 @@ export const PageSizeCalculator: React.FC<{
 
             let scale = defaultScale
                 ? typeof defaultScale === 'string'
-                    ? calculateScale(parentEle, h, w, defaultScale)
+                    ? calculateScale(parentEle, h, w, defaultScale, viewMode, doc.numPages)
                     : defaultScale
                 : decrease(scaled);
 
-            setPageSize({
-                pageHeight: h,
-                pageWidth: w,
-                scale,
-            });
+            setState({ pageSizes, scale });
         });
-    }, [doc]);
+    }, [doc.loadingTask.docId]);
 
-    const { pageWidth } = pageSize;
-    return pageWidth === 0 ? (
-        <div className="rpv-core__page-size-calculator" ref={pagesRef}>
+    return state.pageSizes.length === 0 || state.scale === 0 ? (
+        <div className="rpv-core__page-size-calculator" data-testid="core__page-size-calculating" ref={pagesRef}>
             <Spinner />
         </div>
     ) : (
-        render(pageSize)
+        render(state.pageSizes, state.scale)
     );
 };

@@ -3,16 +3,15 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap, Store } from '@react-pdf-viewer/core';
 import { LocalizationContext, TextBox } from '@react-pdf-viewer/core';
-import type { Store } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
+import type { StoreProps } from './types/StoreProps';
 import { useCurrentPage } from './useCurrentPage';
 import { useNumberOfPages } from './useNumberOfPages';
-import type { StoreProps } from './types/StoreProps';
 
 export const CurrentPageInput: React.FC<{
     store: Store<StoreProps>;
@@ -74,12 +73,15 @@ export const CurrentPageInput: React.FC<{
         }
     };
 
-    const label = l10n && l10n.pageNavigation ? l10n.pageNavigation.enterPageNumber : 'Enter a page number';
+    const label =
+        l10n && l10n.pageNavigation
+            ? ((l10n.pageNavigation as LocalizationMap).enterPageNumber as string)
+            : 'Enter a page number';
 
     return (
         <span className="rpv-page-navigation__current-page-input">
             <TextBox
-                ariaLabel={label as string}
+                ariaLabel={label}
                 testId="page-navigation__current-page-input"
                 type="text"
                 value={editingPage}

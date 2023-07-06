@@ -1,10 +1,9 @@
-import * as React from 'react';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import { classNames, Viewer } from '@react-pdf-viewer/core';
-
+import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
-import { thumbnailPlugin, RenderThumbnailItemProps } from '../src';
+import { RenderThumbnailItemProps, thumbnailPlugin } from '../src';
 
 const TestRenderThumbnailItem: React.FC<{
     fileUrl: Uint8Array;
@@ -28,7 +27,9 @@ const TestRenderThumbnailItem: React.FC<{
         </div>
     );
 
-    const thumbnailPluginInstance = thumbnailPlugin();
+    const thumbnailPluginInstance = thumbnailPlugin({
+        thumbnailWidth: 150,
+    });
     const { Thumbnails } = thumbnailPluginInstance;
 
     return (
@@ -68,8 +69,16 @@ test('Test renderThumbnailItem option', async () => {
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
+    await findByTestId('core__text-layer-2');
+    await findByTestId('core__annotation-layer-2');
+    await findByTestId('core__text-layer-3');
+    await findByTestId('core__annotation-layer-3');
 
-    const pagesContainer = getByTestId('core__inner-pages');
+    const pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,
@@ -100,14 +109,18 @@ test('Test renderThumbnailItem option', async () => {
         },
     });
 
+    await findByTestId('core__text-layer-2');
+
     // Wait until the second thumbnail is rendered
     let secondThumbnailContainer = await findByTestId('thumbnail__container-1');
     mockIsIntersecting(secondThumbnailContainer, true);
 
     const secondThumbnailImage = await findByLabelText('Thumbnail of page 2');
     const src = secondThumbnailImage.getAttribute('src');
-    expect(src.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACFCAYAAACt+l1zAAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV'
+    expect(src?.substring(0, 100)).toEqual(
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAADICAYAAAAKhRhlAAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV'
     );
-    expect(src.length).toEqual(11582);
+    expect(src?.length).toEqual(25166);
+    expect(secondThumbnailImage.getAttribute('width')).toEqual('150px');
+    expect(secondThumbnailImage.getAttribute('height')).toEqual('200px');
 });

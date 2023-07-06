@@ -3,30 +3,26 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { SpecialZoomLevel, Spinner } from '@react-pdf-viewer/core';
 import type { PdfJs, Store, StoreHandler } from '@react-pdf-viewer/core';
-
+import { Spinner } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { BookmarkLoader } from './BookmarkLoader';
+import type { IsBookmarkExpanded } from './types/IsBookmarkExpanded';
+import type { RenderBookmarkItem } from './types/RenderBookmarkItemProps';
 import type { StoreProps } from './types/StoreProps';
 
 export const BookmarkListWithStore: React.FC<{
+    isBookmarkExpanded: IsBookmarkExpanded;
+    renderBookmarkItem?: RenderBookmarkItem;
     store: Store<StoreProps>;
-}> = ({ store }) => {
+}> = ({ isBookmarkExpanded, renderBookmarkItem, store }) => {
     const [currentDoc, setCurrentDoc] = React.useState(store.get('doc'));
 
     const handleDocumentChanged: StoreHandler<PdfJs.PdfDocument> = (doc: PdfJs.PdfDocument) => {
         setCurrentDoc(doc);
-    };
-
-    const jump = (pageIndex: number, bottomOffset: number, leftOffset: number, scaleTo: number | SpecialZoomLevel) => {
-        const jumpToDestination = store.get('jumpToDestination');
-        if (jumpToDestination) {
-            jumpToDestination(pageIndex, bottomOffset, leftOffset, scaleTo);
-        }
     };
 
     React.useEffect(() => {
@@ -38,7 +34,12 @@ export const BookmarkListWithStore: React.FC<{
     }, []);
 
     return currentDoc ? (
-        <BookmarkLoader doc={currentDoc} store={store} onJumpToDest={jump} />
+        <BookmarkLoader
+            doc={currentDoc}
+            isBookmarkExpanded={isBookmarkExpanded}
+            renderBookmarkItem={renderBookmarkItem}
+            store={store}
+        />
     ) : (
         <div className="rpv-bookmark__loader">
             <Spinner />

@@ -3,7 +3,7 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 :root {
@@ -26,6 +26,8 @@
     --rpv-core__doc-error-text-background-color: #c02424;
     --rpv-core__doc-error-text-color: #fff;
     --rpv-core__doc-loading-background-color: #fff;
+
+    --rpv-core__full-screen-target-background-color: #fff;
 
     --rpv-core__inner-page-background-color: #fff;
 
@@ -89,6 +91,8 @@
     --rpv-core__doc-error-text-background-color: #c02323;
     --rpv-core__doc-error-text-color: #fff;
     --rpv-core__doc-loading-background-color: #191919;
+
+    --rpv-core__full-screen-target-background-color: #1a1a1a;
 
     --rpv-core__inner-page-background-color: #1a1a1a;
 

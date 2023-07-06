@@ -3,20 +3,19 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { getPage } from '@react-pdf-viewer/core';
 import type { Store } from '@react-pdf-viewer/core';
-
+import { getPage } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { EMPTY_KEYWORD_REGEXP } from './constants';
 import { normalizeSingleKeyword } from './normalizeKeyword';
-import { useDocument } from './useDocument';
 import type { Match } from './types/Match';
 import type { SearchTargetPageFilter } from './types/SearchTargetPage';
 import type { SingleKeyword } from './types/SingleKeyword';
 import type { StoreProps } from './types/StoreProps';
+import { useDocument } from './useDocument';
 
 export const useSearch = (
     store: Store<StoreProps>
@@ -40,13 +39,30 @@ export const useSearch = (
     keyword: string;
     setKeyword(keyword: string): void;
 } => {
+    const initialKeyword = store.get('initialKeyword');
+
+    const normalizedKeywordFlags = React.useMemo(() => {
+        if (initialKeyword && initialKeyword.length === 1) {
+            const normalizedKeyword = normalizeSingleKeyword(initialKeyword[0]);
+            return {
+                matchCase: normalizedKeyword.regExp.flags.indexOf('i') === -1,
+                wholeWords: normalizedKeyword.wholeWords,
+            };
+        } else {
+            return {
+                matchCase: false,
+                wholeWords: false,
+            };
+        }
+    }, []);
+
     const currentDocRef = useDocument(store);
-    const [keywords, setKeywords] = React.useState<SingleKeyword[]>([]);
+    const [keywords, setKeywords] = React.useState<SingleKeyword[]>(initialKeyword);
     const [found, setFound] = React.useState<Match[]>([]);
     const [currentMatch, setCurrentMatch] = React.useState(0);
-    const [matchCase, setMatchCase] = React.useState(false);
+    const [matchCase, setMatchCase] = React.useState(normalizedKeywordFlags.matchCase);
     const textContents = React.useRef<string[]>([]);
-    const [wholeWords, setWholeWords] = React.useState(false);
+    const [wholeWords, setWholeWords] = React.useState(normalizedKeywordFlags.wholeWords);
 
     const defaultTargetPageFilter = () => true;
     const targetPageFilter = React.useCallback(
@@ -69,13 +85,13 @@ export const useSearch = (
     };
 
     const jumpToMatch = (index: number): Match | null => {
-        if (keywords.length === 0 || found.length === 0) {
+        const numMatches = found.length;
+        if (keywords.length === 0 || numMatches === 0) {
             return null;
         }
 
-        // Make sure that the `index` is in the range of 1 and `found.length`
-        const normalizedIndex = Math.max(1, Math.min(found.length, index));
-
+        // Make sure that the `index` is in the range of 1 and `numMatches`
+        const normalizedIndex = index === numMatches + 1 ? 1 : Math.max(1, Math.min(numMatches, index));
         setCurrentMatch(normalizedIndex);
         return jumpToGivenMatch(found[normalizedIndex - 1]);
     };

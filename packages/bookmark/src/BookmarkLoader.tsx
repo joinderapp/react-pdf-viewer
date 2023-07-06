@@ -3,21 +3,15 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { LocalizationMap, PdfJs, Store } from '@react-pdf-viewer/core';
+import { classNames, LocalizationContext, Spinner, TextDirection, ThemeContext } from '@react-pdf-viewer/core';
 import * as React from 'react';
-import {
-    classNames,
-    LocalizationContext,
-    SpecialZoomLevel,
-    Spinner,
-    TextDirection,
-    ThemeContext,
-} from '@react-pdf-viewer/core';
-import type { PdfJs, Store } from '@react-pdf-viewer/core';
-
 import { BookmarkListRoot } from './BookmarkListRoot';
+import type { IsBookmarkExpanded } from './types/IsBookmarkExpanded';
+import type { RenderBookmarkItem } from './types/RenderBookmarkItemProps';
 import type { StoreProps } from './types/StoreProps';
 
 interface BookmarkState {
@@ -27,9 +21,10 @@ interface BookmarkState {
 
 export const BookmarkLoader: React.FC<{
     doc: PdfJs.PdfDocument;
+    isBookmarkExpanded?: IsBookmarkExpanded;
+    renderBookmarkItem?: RenderBookmarkItem;
     store: Store<StoreProps>;
-    onJumpToDest(pageIndex: number, bottomOffset: number, leftOffset: number, scaleTo: number | SpecialZoomLevel): void;
-}> = ({ doc, store, onJumpToDest }) => {
+}> = ({ doc, isBookmarkExpanded, renderBookmarkItem, store }) => {
     const { l10n } = React.useContext(LocalizationContext);
     const { direction } = React.useContext(ThemeContext);
     const isRtl = direction === TextDirection.RightToLeft;
@@ -52,7 +47,9 @@ export const BookmarkLoader: React.FC<{
     }, [doc]);
 
     return !bookmarks.isLoaded ? (
-        <Spinner />
+        <div className="rpv-bookmark__loader">
+            <Spinner />
+        </div>
     ) : bookmarks.items.length === 0 ? (
         <div
             data-testid="bookmark__empty"
@@ -61,7 +58,7 @@ export const BookmarkLoader: React.FC<{
                 'rpv-bookmark__empty--rtl': isRtl,
             })}
         >
-            {l10n && l10n.bookmark ? l10n.bookmark.noBookmark : 'There is no bookmark'}
+            {l10n && l10n.bookmark ? ((l10n.bookmark as LocalizationMap).noBookmark as string) : 'There is no bookmark'}
         </div>
     ) : (
         <div
@@ -71,7 +68,13 @@ export const BookmarkLoader: React.FC<{
                 'rpv-bookmark__container--rtl': isRtl,
             })}
         >
-            <BookmarkListRoot bookmarks={bookmarks.items} doc={doc} store={store} onJumpToDest={onJumpToDest} />
+            <BookmarkListRoot
+                bookmarks={bookmarks.items}
+                doc={doc}
+                isBookmarkExpanded={isBookmarkExpanded}
+                renderBookmarkItem={renderBookmarkItem}
+                store={store}
+            />
         </div>
     );
 };

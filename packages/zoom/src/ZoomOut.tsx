@@ -3,17 +3,16 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { Store } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
+import type { RenderZoomOutProps } from './types/RenderZoomOutProps';
+import type { StoreProps } from './types/StoreProps';
 import { useZoom } from './useZoom';
 import { decrease } from './zoomingLevel';
 import { ZoomOutButton } from './ZoomOutButton';
-import type { RenderZoomOutProps } from './types/RenderZoomOutProps';
-import type { StoreProps } from './types/StoreProps';
 
 type RenderZoomOut = (props: RenderZoomOutProps) => React.ReactElement;
 

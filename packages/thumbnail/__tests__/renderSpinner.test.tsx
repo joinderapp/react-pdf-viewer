@@ -1,7 +1,6 @@
-import * as React from 'react';
-import { render, waitForElementToBeRemoved } from '@testing-library/react';
 import { Viewer } from '@react-pdf-viewer/core';
-
+import { render, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { thumbnailPlugin } from '../src';
 
@@ -50,6 +49,9 @@ test('Test renderSpinner option', async () => {
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__text-layer-2');
 
     const thumbnailsListContainer = await findByTestId('thumbnail__list-container');
     mockIsIntersecting(thumbnailsListContainer, true);

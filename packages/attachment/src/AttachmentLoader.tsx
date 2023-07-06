@@ -3,13 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap, PdfJs } from '@react-pdf-viewer/core';
 import { classNames, LocalizationContext, Spinner, TextDirection, ThemeContext } from '@react-pdf-viewer/core';
-import type { PdfJs } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { AttachmentList } from './AttachmentList';
 import type { FileItem } from './types/FileItem';
 
@@ -25,7 +24,10 @@ export const AttachmentLoader: React.FC<{
     const { direction } = React.useContext(ThemeContext);
 
     const isRtl = direction === TextDirection.RightToLeft;
-    const noAttachmentLabel = l10n && l10n.attachment ? l10n.attachment.noAttachment : 'There is no attachment';
+    const noAttachmentLabel =
+        l10n && l10n.attachment
+            ? ((l10n.attachment as LocalizationMap).noAttachment as string)
+            : 'There is no attachment';
 
     const [attachments, setAttachments] = React.useState<AttachmentState>({
         files: [],

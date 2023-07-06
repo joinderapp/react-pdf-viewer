@@ -1,8 +1,4 @@
 module.exports = {
-    testEnvironment: 'jsdom',
-    // Uncomment the `testMatch` option when we want to run a specific test case
-    // testMatch: ['<rootDir>/packages/page-navigation/__tests__/CurrentPageLabel.test.tsx'],
-    testRegex: ['(/__tests__/.*|(\\.|/)(test|spec))\\.tsx$'],
     moduleNameMapper: {
         '@react-pdf-viewer/core': '<rootDir>/packages/core/src',
         '@react-pdf-viewer/default-layout': '<rootDir>/packages/default-layout/src',
@@ -11,8 +7,15 @@ module.exports = {
         'pdfjs-dist': '<rootDir>/node_modules/pdfjs-dist/legacy/build/pdf',
         // For pdfjs-dist 2.6.347
         // 'pdfjs-dist': '<rootDir>/node_modules/pdfjs-dist/es5/build/pdf',
+        // Polyfill `Path2D` required by pdfjs
+        'path2d-polyfill': '<rootDir>/node_modules/path2d-polyfill',
     },
-    setupFilesAfterEnv: ['<rootDir>/configs/setupTests.ts'],
+    setupFilesAfterEnv: ['<rootDir>/__setups__/setupTests.ts'],
+    testEnvironment: 'jsdom',
+    // Uncomment the `testMatch` option when we want to run a specific test case
+    // testMatch: ['<rootDir>/packages/thumbnail/__tests__/coverWidth.test.tsx'],
+    testRegex: ['(/__tests__/.*|(\\.|/)(test|spec))\\.tsx$'],
+    testTimeout: 20 * 1000, // 20s
     transform: {
         '^.+\\.tsx?$': 'ts-jest',
     },

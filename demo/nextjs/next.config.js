@@ -1,10 +1,12 @@
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
+    reactStrictMode: true,
     webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+        // We need it because we use the local development version of `@react-pdf-viewer/xxx`
         // Otherwise, we will see "Invalid hook call" error
         config.resolve.alias['react'] = path.join(__dirname, '../../node_modules/react');
-        config.resolve.alias['pdfjs-dist'] = path.join(__dirname, '../../node_modules/pdfjs-dist/legacy/build/pdf');
 
         // Be able to compile TypeScript files
         const tsLoader = {
@@ -46,6 +48,18 @@ module.exports = {
             canvas: 'canvas',
         });
         config.plugins.push(mapPlugin);
+
+        // Copy pdfjs worker to `public`
+        config.plugins.push(
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: path.join(__dirname, '../../node_modules/pdfjs-dist/build/pdf.worker.min.js'),
+                        to: path.join(__dirname, 'public'),
+                    },
+                ],
+            })
+        );
 
         return config;
     },

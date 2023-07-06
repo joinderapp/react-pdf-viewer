@@ -3,15 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { Position } from '../structs/Position';
-import { calculatePosition } from '../utils/calculatePosition';
 import type { Offset } from '../types/Offset';
+import { calculatePosition } from '../utils/calculatePosition';
 
 export const usePosition = (
     contentRef: React.RefObject<HTMLElement>,

@@ -3,11 +3,11 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { Plugin } from '@react-pdf-viewer/core';
+import * as React from 'react';
 
 // Types
 export interface CurrentPageLabelProps {
@@ -35,9 +35,21 @@ export interface RenderGoToPageProps {
 
 export type RenderGoToPage = (props: RenderGoToPageProps) => React.ReactElement;
 
+export interface RenderNumberOfPagesProps {
+    numberOfPages: number;
+}
+
+export type RenderNumberOfPages = (props: RenderNumberOfPagesProps) => React.ReactElement;
+
+export interface NumberOfPagesProps {
+    children?: RenderNumberOfPages;
+}
+
 // Plugin
 export interface PageNavigationPlugin extends Plugin {
+    jumpToNextPage(): void;
     jumpToPage: (pageIndex: number) => void;
+    jumpToPreviousPage(): void;
     CurrentPageInput: () => React.ReactElement;
     CurrentPageLabel: (props: CurrentPageLabelProps) => React.ReactElement;
     GoToFirstPage: (props: GoToPageProps) => React.ReactElement;
@@ -52,9 +64,14 @@ export interface PageNavigationPlugin extends Plugin {
     GoToPreviousPage: (props: GoToPageProps) => React.ReactElement;
     GoToPreviousPageButton: () => React.ReactElement;
     GoToPreviousPageMenuItem: (props: GoToPageMenuItemProps) => React.ReactElement;
+    NumberOfPages: (props: NumberOfPagesProps) => React.ReactElement;
 }
 
-export function pageNavigationPlugin(): PageNavigationPlugin;
+export interface PageNavigationPluginProps {
+    enableShortcuts?: boolean;
+}
+
+export function pageNavigationPlugin(props?: PageNavigationPluginProps): PageNavigationPlugin;
 
 // Components
 export class DownArrowIcon extends React.Component {}

@@ -3,14 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { getDestination, SpecialZoomLevel } from '@react-pdf-viewer/core';
 import type { PdfJs, Store } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { BookmarkList } from './BookmarkList';
+import type { IsBookmarkExpanded } from './types/IsBookmarkExpanded';
+import type { RenderBookmarkItem } from './types/RenderBookmarkItemProps';
 import type { StoreProps } from './types/StoreProps';
 
 enum Toggle {
@@ -21,37 +21,11 @@ enum Toggle {
 export const BookmarkListRoot: React.FC<{
     bookmarks: PdfJs.Outline[];
     doc: PdfJs.PdfDocument;
+    isBookmarkExpanded?: IsBookmarkExpanded;
+    renderBookmarkItem?: RenderBookmarkItem;
     store: Store<StoreProps>;
-    onJumpToDest(pageIndex: number, bottomOffset: number, leftOffset: number, scaleTo: number | SpecialZoomLevel): void;
-}> = ({ bookmarks, doc, store, onJumpToDest }) => {
+}> = ({ bookmarks, doc, isBookmarkExpanded, renderBookmarkItem, store }) => {
     const containerRef = React.useRef<HTMLDivElement>();
-    const [links, setLinks] = React.useState(store.get('linkAnnotations') || {});
-
-    const updateLinkAnnotation = (bookmark: PdfJs.Outline, links: Record<string, HTMLElement>): void => {
-        const dest = bookmark.dest;
-        if (!dest || typeof dest !== 'string' || !links[dest]) {
-            return;
-        }
-        const annotationContainer = links[dest];
-        annotationContainer.querySelectorAll(`a[data-annotation-link-dest="${dest}"]`).forEach((node) => {
-            node.setAttribute('aria-label', bookmark.title);
-        });
-
-        // Loop over the child bookmarks
-        if (!bookmark.items || !bookmark.items.length) {
-            return;
-        }
-        bookmark.items.forEach((item) => updateLinkAnnotation(item, links));
-    };
-
-    const handleLinkAnnotationsChanged = (links: Record<string, HTMLElement>) => setLinks(links);
-
-    const jumpToDest = (dest: PdfJs.OutlineDestinationType): void => {
-        getDestination(doc, dest).then((target) => {
-            const { pageIndex, bottomOffset, leftOffset, scaleTo } = target;
-            onJumpToDest(pageIndex, bottomOffset, leftOffset, scaleTo);
-        });
-    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
         const container = containerRef.current;
@@ -152,17 +126,11 @@ export const BookmarkListRoot: React.FC<{
 
     React.useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
-        store.subscribe('linkAnnotations', handleLinkAnnotationsChanged);
 
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
-            store.unsubscribe('linkAnnotations', handleLinkAnnotationsChanged);
         };
     }, []);
-
-    React.useEffect(() => {
-        bookmarks.forEach((bookmark) => updateLinkAnnotation(bookmark, links));
-    }, [links]);
 
     React.useEffect(() => {
         const container = containerRef.current;
@@ -185,9 +153,11 @@ export const BookmarkListRoot: React.FC<{
                 bookmarks={bookmarks}
                 depth={0}
                 doc={doc}
+                isBookmarkExpanded={isBookmarkExpanded}
                 isRoot={true}
+                pathFromRoot=""
+                renderBookmarkItem={renderBookmarkItem}
                 store={store}
-                onJumpToDest={jumpToDest}
             />
         </div>
     );

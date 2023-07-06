@@ -3,63 +3,47 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { PageSize, PdfJs } from '@react-pdf-viewer/core';
+import { getPage, useIsMounted } from '@react-pdf-viewer/core';
 import * as React from 'react';
-import { getPage } from '@react-pdf-viewer/core';
-import type { PdfJs } from '@react-pdf-viewer/core';
-
 import { PageThumbnail } from './PageThumbnail';
-
-interface PageState {
-    height: number;
-    page: PdfJs.Page | null;
-    viewportRotation: number;
-    width: number;
-}
 
 export const PageThumbnailContainer: React.FC<{
     canvas: HTMLCanvasElement;
     doc: PdfJs.PdfDocument;
-    pageHeight: number;
     pageIndex: number;
-    pageWidth: number;
+    pageRotation: number;
+    pageSize: PageSize;
     rotation: number;
+    shouldRender: boolean;
     onLoad(): void;
-}> = ({ canvas, doc, pageHeight, pageIndex, pageWidth, rotation, onLoad }) => {
-    const [pageSize, setPageSize] = React.useState<PageState>({
-        height: pageHeight,
-        page: null,
-        viewportRotation: 0,
-        width: pageWidth,
-    });
-    const { page, height, width } = pageSize;
-    const isVertical = Math.abs(rotation) % 180 === 0;
+}> = ({ canvas, doc, pageIndex, pageRotation, pageSize, rotation, shouldRender, onLoad }) => {
+    const isMounted = useIsMounted();
+    const [page, setPage] = React.useState<PdfJs.Page>(null);
+    const isVertical = Math.abs(rotation + pageRotation) % 180 === 0;
 
     React.useEffect(() => {
-        getPage(doc, pageIndex).then((pdfPage) => {
-            const viewport = pdfPage.getViewport({ scale: 1 });
-
-            setPageSize({
-                height: viewport.height,
-                page: pdfPage,
-                viewportRotation: viewport.rotation,
-                width: viewport.width,
+        if (shouldRender) {
+            getPage(doc, pageIndex).then((pdfPage) => {
+                isMounted.current && setPage(pdfPage);
             });
-        });
-    }, []);
+        }
+    }, [shouldRender]);
 
     // To support the document which is already rotated
-    const rotationNumber = (rotation + pageSize.viewportRotation) % 360;
+    const rotationNumber = (pageSize.rotation + rotation + pageRotation) % 360;
 
     return (
         page && (
             <PageThumbnail
                 canvas={canvas}
                 page={page}
-                pageHeight={isVertical ? height : width}
-                pageWidth={isVertical ? width : height}
+                pageHeight={isVertical ? pageSize.pageHeight : pageSize.pageWidth}
+                pageIndex={pageIndex}
+                pageWidth={isVertical ? pageSize.pageWidth : pageSize.pageHeight}
                 rotation={rotationNumber}
                 onLoad={onLoad}
             />

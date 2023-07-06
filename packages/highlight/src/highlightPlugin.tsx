@@ -3,34 +3,35 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { createStore, LayerRenderStatus } from '@react-pdf-viewer/core';
 import type {
-    PluginOnTextLayerRender,
     Plugin,
     PluginFunctions,
+    PluginOnTextLayerRender,
     PluginRenderPageLayer,
     RenderViewer,
     Slot,
     ViewerState,
 } from '@react-pdf-viewer/core';
-
+import { createStore, LayerRenderStatus } from '@react-pdf-viewer/core';
+import * as React from 'react';
+import { ClickDrag } from './ClickDrag';
 import { HIGHLIGHT_LAYER_ATTR, HIGHLIGHT_PAGE_ATTR } from './constants';
 import { HighlightAreaList } from './HighlightAreaList';
-import { NO_SELECTION_STATE, SELECTING_STATE, SelectedState } from './HighlightState';
-import { Tracker } from './Tracker';
 import { Trigger } from './structs/Trigger';
+import { Tracker } from './Tracker';
 import type { HighlightArea } from './types/HighlightArea';
-import type { RenderHighlightsProps } from './types/RenderHighlightsProps';
+import { HighlightStateType, NO_SELECTION_STATE, SELECTING_STATE } from './types/HighlightState';
 import type { RenderHighlightContentProps } from './types/RenderHighlightContentProps';
+import type { RenderHighlightsProps } from './types/RenderHighlightsProps';
 import type { RenderHighlightTargetProps } from './types/RenderHighlightTargetProps';
 import type { StoreProps } from './types/StoreProps';
 
 export interface HighlightPlugin extends Plugin {
     jumpToHighlightArea(area: HighlightArea): void;
+    switchTrigger(trigger: Trigger): void;
 }
 
 export interface HighlightPluginProps {
@@ -49,16 +50,13 @@ export const highlightPlugin = (props?: HighlightPluginProps): HighlightPlugin =
         () =>
             createStore<StoreProps>({
                 highlightState: NO_SELECTION_STATE,
+                trigger: highlightPluginProps.trigger,
             }),
         []
     );
 
     const renderViewer = (props: RenderViewer): Slot => {
         const currentSlot = props.slot;
-        if (highlightPluginProps.trigger !== Trigger.TextSelection) {
-            return currentSlot;
-        }
-
         if (currentSlot.subSlot && currentSlot.subSlot.children) {
             currentSlot.subSlot.children = (
                 <>
@@ -72,10 +70,14 @@ export const highlightPlugin = (props?: HighlightPluginProps): HighlightPlugin =
     };
 
     const handleMouseDown = (textLayerRender: PluginOnTextLayerRender) => (e: MouseEvent) => {
+        if (store.get('trigger') === Trigger.None || e.button !== 0) {
+            return;
+        }
+
         const textLayer = textLayerRender.ele;
         const pageRect = textLayer.getBoundingClientRect();
         const highlightState = store.get('highlightState');
-        if (highlightState instanceof SelectedState) {
+        if (highlightState.type === HighlightStateType.Selected) {
             const mouseTop = e.clientY - pageRect.top;
             const mouseLeft = e.clientX - pageRect.left;
 
@@ -111,6 +113,10 @@ export const highlightPlugin = (props?: HighlightPluginProps): HighlightPlugin =
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleMouseUp = (textLayerRender: PluginOnTextLayerRender) => (e: MouseEvent) => {
+        if (store.get('trigger') === Trigger.None) {
+            return;
+        }
+
         const selectEnd = textLayerRender.ele.querySelector(`.${TEXT_LAYER_END_SELECTOR}`);
         if (selectEnd) {
             (selectEnd as HTMLElement).style.removeProperty('top');
@@ -118,10 +124,6 @@ export const highlightPlugin = (props?: HighlightPluginProps): HighlightPlugin =
     };
 
     const onTextLayerRender = (e: PluginOnTextLayerRender) => {
-        if (highlightPluginProps.trigger !== Trigger.TextSelection) {
-            return;
-        }
-
         const mouseDownHandler = handleMouseDown(e);
         const mouseUpHandler = handleMouseUp(e);
         const textEle = e.ele;
@@ -145,20 +147,33 @@ export const highlightPlugin = (props?: HighlightPluginProps): HighlightPlugin =
                 .forEach((span) => span.setAttribute(HIGHLIGHT_PAGE_ATTR, `${e.pageIndex}`));
 
             // Create an element that improves the text selection
-            const selectEnd = document.createElement('div');
-            selectEnd.classList.add(TEXT_LAYER_END_SELECTOR);
-            textEle.appendChild(selectEnd);
+            if (!textEle.querySelector(`.${TEXT_LAYER_END_SELECTOR}`)) {
+                const selectEnd = document.createElement('div');
+                selectEnd.classList.add(TEXT_LAYER_END_SELECTOR);
+                selectEnd.classList.add('rpv-core__text-layer-text--not');
+                textEle.appendChild(selectEnd);
+            }
         }
     };
 
     const renderPageLayer = (renderPageProps: PluginRenderPageLayer) => (
-        <HighlightAreaList
-            pageIndex={renderPageProps.pageIndex}
-            renderHighlightContent={highlightPluginProps.renderHighlightContent}
-            renderHighlightTarget={highlightPluginProps.renderHighlightTarget}
-            renderHighlights={highlightPluginProps.renderHighlights}
-            store={store}
-        />
+        <>
+            <ClickDrag
+                canvasLayerRef={renderPageProps.canvasLayerRef}
+                canvasLayerRendered={renderPageProps.canvasLayerRendered}
+                pageIndex={renderPageProps.pageIndex}
+                store={store}
+                textLayerRef={renderPageProps.textLayerRef}
+                textLayerRendered={renderPageProps.textLayerRendered}
+            />
+            <HighlightAreaList
+                pageIndex={renderPageProps.pageIndex}
+                renderHighlightContent={highlightPluginProps.renderHighlightContent}
+                renderHighlightTarget={highlightPluginProps.renderHighlightTarget}
+                renderHighlights={highlightPluginProps.renderHighlights}
+                store={store}
+            />
+        </>
     );
 
     const jumpToHighlightArea = (area: HighlightArea) => {
@@ -168,8 +183,16 @@ export const highlightPlugin = (props?: HighlightPluginProps): HighlightPlugin =
             const bottomOffset = (_: number, viewportHeight: number) => ((100 - area.top) * viewportHeight) / 100;
             const leftOffset = (viewportWidth: number, _: number) => ((100 - area.left) * viewportWidth) / 100;
             /* eslint-enable @typescript-eslint/no-unused-vars */
-            jumpToDestination(area.pageIndex, bottomOffset, leftOffset);
+            jumpToDestination({
+                pageIndex: area.pageIndex,
+                bottomOffset,
+                leftOffset,
+            });
         }
+    };
+
+    const switchTrigger = (trigger: Trigger) => {
+        store.update('trigger', trigger);
     };
 
     return {
@@ -185,5 +208,6 @@ export const highlightPlugin = (props?: HighlightPluginProps): HighlightPlugin =
         renderPageLayer,
         renderViewer,
         jumpToHighlightArea,
+        switchTrigger,
     };
 };

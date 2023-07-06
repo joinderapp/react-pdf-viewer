@@ -3,24 +3,23 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
-import { useIsMounted } from '../hooks/useIsMounted';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { LayerRenderStatus } from '../structs/LayerRenderStatus';
-import { floatToRatio } from '../utils/floatToRatio';
-import { roundToDivide } from '../utils/roundToDivide';
 import type { PdfJs } from '../types/PdfJs';
 import type { Plugin } from '../types/Plugin';
+import { floatToRatio } from '../utils/floatToRatio';
+import { roundToDivide } from '../utils/roundToDivide';
 
 // The mobile browsers have the limit value for maximum canvas size
 // The values vary but here we set a maximum value of 16 mega-pixels
 const MAX_CANVAS_SIZE = 4096 * 4096;
 
 export const CanvasLayer: React.FC<{
+    canvasLayerRef: React.MutableRefObject<HTMLCanvasElement>;
     height: number;
     page: PdfJs.Page;
     pageIndex: number;
@@ -29,8 +28,7 @@ export const CanvasLayer: React.FC<{
     scale: number;
     width: number;
     onRenderCanvasCompleted: () => void;
-}> = ({ height, page, pageIndex, plugins, rotation, scale, width, onRenderCanvasCompleted }) => {
-    const canvasRef = React.useRef<HTMLCanvasElement>();
+}> = ({ canvasLayerRef, height, page, pageIndex, plugins, rotation, scale, width, onRenderCanvasCompleted }) => {
     const renderTask = React.useRef<PdfJs.PageRenderTask>();
 
     useIsomorphicLayoutEffect(() => {
@@ -39,8 +37,8 @@ export const CanvasLayer: React.FC<{
             task.cancel();
         }
 
-        const canvasEle = canvasRef.current;
-
+        const canvasEle = canvasLayerRef.current;
+        canvasEle.removeAttribute('data-testid');
         plugins.forEach((plugin) => {
             if (plugin.onCanvasLayerRender) {
                 plugin.onCanvasLayerRender({
@@ -89,6 +87,7 @@ export const CanvasLayer: React.FC<{
         renderTask.current.promise.then(
             (): void => {
                 canvasEle.hidden = false;
+                canvasEle.setAttribute('data-testid', `core__canvas-layer-${pageIndex}`);
                 plugins.forEach((plugin) => {
                     if (plugin.onCanvasLayerRender) {
                         plugin.onCanvasLayerRender({
@@ -103,13 +102,13 @@ export const CanvasLayer: React.FC<{
                 onRenderCanvasCompleted();
             },
             (): void => {
-                canvasEle.hidden = false;
+                // Keep the canvas hidden to avoid black flickering
+                // The issue only happens with React 18's Strict mode
                 onRenderCanvasCompleted();
             }
         );
 
         return () => {
-            renderTask.current?.cancel();
             if (canvasEle) {
                 canvasEle.width = 0;
                 canvasEle.height = 0;
@@ -125,7 +124,7 @@ export const CanvasLayer: React.FC<{
                 width: `${width}px`,
             }}
         >
-            <canvas ref={canvasRef} />
+            <canvas ref={canvasLayerRef} />
         </div>
     );
 };

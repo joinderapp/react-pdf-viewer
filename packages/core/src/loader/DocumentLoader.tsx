@@ -3,26 +3,27 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { Spinner } from '../components/Spinner';
 import { useIsMounted } from '../hooks/useIsMounted';
+import { PasswordStatus } from '../structs/PasswordStatus';
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
+import type { CharacterMap } from '../types/CharacterMap';
+import type { DocumentAskPasswordEvent } from '../types/DocumentAskPasswordEvent';
+import type { PdfJs } from '../types/PdfJs';
+import type { RenderProtectedView } from '../types/RenderProtectedView';
 import { classNames } from '../utils/classNames';
-import { PdfJsApi } from '../vendors/PdfJsApi';
-import { CharacterMap } from '../Viewer';
-import { AskForPasswordState, SubmitPassword } from './AskForPasswordState';
+import { PdfJsApiContext } from '../vendors/PdfJsApiContext';
+import { AskForPasswordState } from './AskForPasswordState';
 import { AskingPassword } from './AskingPassword';
 import { CompletedState } from './CompletedState';
 import { FailureState } from './FailureState';
+import type { LoadError } from './LoadError';
 import { LoadingState } from './LoadingState';
 import { LoadingStatus } from './LoadingStatus';
-import type { DocumentAskPasswordEvent, VerifyPassword } from '../types/DocumentAskPasswordEvent';
-import type { LoadError } from './LoadError';
-import type { PdfJs } from '../types/PdfJs';
 
 export type RenderError = (error: LoadError) => React.ReactElement;
 
@@ -33,6 +34,7 @@ export const DocumentLoader: React.FC<{
     render(doc: PdfJs.PdfDocument): React.ReactElement;
     renderError?: RenderError;
     renderLoader?(percentages: number): React.ReactElement;
+    renderProtectedView?: RenderProtectedView;
     transformGetDocumentParams?(options: PdfJs.GetDocumentParams): PdfJs.GetDocumentParams;
     withCredentials: boolean;
     onDocumentAskPassword?(e: DocumentAskPasswordEvent): void;
@@ -43,24 +45,25 @@ export const DocumentLoader: React.FC<{
     render,
     renderError,
     renderLoader,
+    renderProtectedView,
     transformGetDocumentParams,
     withCredentials,
     onDocumentAskPassword,
 }) => {
+    const { pdfJsApiProvider } = React.useContext(PdfJsApiContext);
     const { direction } = React.useContext(ThemeContext);
     const isRtl = direction === TextDirection.RightToLeft;
     const [status, setStatus] = React.useState<LoadingStatus>(new LoadingState(0));
-
-    const [percentages, setPercentages] = React.useState(0);
-    const [loadedDocument, setLoadedDocument] = React.useState<PdfJs.PdfDocument>(null);
+    const docRef = React.useRef<string>('');
     const isMounted = useIsMounted();
 
     React.useEffect(() => {
         // Reset the status when new `file` is provided (for example, when opening file from the toolbar)
+        docRef.current = '';
         setStatus(new LoadingState(0));
 
         // Create a new worker
-        const worker = new PdfJsApi.PDFWorker({ name: `PDFWorker_${Date.now()}` as any }) as PdfJs.PDFWorker;
+        const worker = new pdfJsApiProvider.PDFWorker({ name: `PDFWorker_${Date.now()}` as any }) as PdfJs.PDFWorker;
 
         const params: PdfJs.GetDocumentParams = Object.assign(
             {
@@ -83,29 +86,36 @@ export const DocumentLoader: React.FC<{
         );
         const transformParams = transformGetDocumentParams ? transformGetDocumentParams(params) : params;
 
-        const loadingTask = PdfJsApi.getDocument(transformParams as any) as unknown as PdfJs.LoadingTask;
-        loadingTask.onPassword = (verifyPassword: VerifyPassword, reason: number): void => {
+        const loadingTask = pdfJsApiProvider.getDocument(transformParams as any) as unknown as PdfJs.LoadingTask;
+        loadingTask.onPassword = (verifyPassword: (password: string) => void, reason: number): void => {
             switch (reason) {
-                case PdfJsApi.PasswordResponses.NEED_PASSWORD:
+                case pdfJsApiProvider.PasswordResponses.NEED_PASSWORD:
                     isMounted.current &&
-                        setStatus(new AskForPasswordState(verifyPassword, SubmitPassword.REQUIRE_PASSWORD));
+                        setStatus(new AskForPasswordState(verifyPassword, PasswordStatus.RequiredPassword));
                     break;
-                case PdfJsApi.PasswordResponses.INCORRECT_PASSWORD:
+                case pdfJsApiProvider.PasswordResponses.INCORRECT_PASSWORD:
                     isMounted.current &&
-                        setStatus(new AskForPasswordState(verifyPassword, SubmitPassword.WRONG_PASSWORD));
+                        setStatus(new AskForPasswordState(verifyPassword, PasswordStatus.WrongPassword));
                     break;
                 default:
                     break;
             }
         };
         loadingTask.onProgress = (progress) => {
-            progress.total > 0
-                ? // It seems weird but there is a case that `loaded` is greater than `total`
-                  isMounted.current && setPercentages(Math.min(100, (100 * progress.loaded) / progress.total))
-                : isMounted.current && setPercentages(100);
+            const loaded =
+                progress.total > 0
+                    ? // It seems weird but there is a case that `loaded` is greater than `total`
+                      Math.min(100, (100 * progress.loaded) / progress.total)
+                    : 100;
+            if (isMounted.current && docRef.current === '') {
+                setStatus(new LoadingState(loaded));
+            }
         };
         loadingTask.promise.then(
-            (doc) => isMounted.current && setLoadedDocument(doc),
+            (doc) => {
+                docRef.current = doc.loadingTask.docId;
+                isMounted.current && setStatus(new CompletedState(doc));
+            },
             (err) =>
                 isMounted.current &&
                 !worker.destroyed &&
@@ -123,22 +133,11 @@ export const DocumentLoader: React.FC<{
         };
     }, [file]);
 
-    // There is a case that `loadingTask.promise()` is already resolved but `loadingTask.onProgress` is still triggered
-    // (numOfPercentages does not reach 100 yet)
-    // So, we have to check both `percentages` and `loaded`
-    React.useEffect(() => {
-        // percentages === 100 && loadedDocument
-        //     ? isMounted.current && setStatus(new CompletedState(loadedDocument))
-        //     : isMounted.current && setStatus(new LoadingState(percentages));
-        if (loadedDocument) {
-            isMounted.current && setStatus(new CompletedState(loadedDocument));
-        }
-    }, [percentages, loadedDocument]);
-
     if (status instanceof AskForPasswordState) {
         return (
             <AskingPassword
-                submitPassword={status.submitPassword}
+                passwordStatus={status.passwordStatus}
+                renderProtectedView={renderProtectedView}
                 verifyPassword={status.verifyPassword}
                 onDocumentAskPassword={onDocumentAskPassword}
             />

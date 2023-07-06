@@ -3,13 +3,21 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { Plugin } from '@react-pdf-viewer/core';
+import { RotateDirection } from '@react-pdf-viewer/core';
+import * as React from 'react';
 
 // Types
+export interface RenderRotatePageProps {
+    onRotatePage(pageIndex: number, direction: RotateDirection): void;
+}
+export interface RotatePageProps {
+    children: (props: RenderRotatePageProps) => React.ReactElement;
+}
+
 export interface RotateProps {
     children?: (props: RenderRotateProps) => React.ReactElement;
     direction: RotateDirection;
@@ -24,15 +32,10 @@ export interface RotateDecoratorProps {
     onClick(): void;
 }
 
-// Structs
-export enum RotateDirection {
-    Backward = 'Backward',
-    Forward = 'Forward',
-}
-
 // Plugin
 export interface RotatePlugin extends Plugin {
     Rotate(props: RotateProps): React.ReactElement;
+    RotatePage(props: RotatePageProps): React.ReactElement;
     RotateBackwardButton(): React.ReactElement;
     RotateBackwardMenuItem(props: RotateDecoratorProps): React.ReactElement;
     RotateForwardButton(): React.ReactElement;

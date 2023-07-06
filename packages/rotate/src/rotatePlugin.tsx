@@ -3,17 +3,16 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { Plugin, PluginFunctions } from '@react-pdf-viewer/core';
+import { createStore, RotateDirection } from '@react-pdf-viewer/core';
 import * as React from 'react';
-import { createStore } from '@react-pdf-viewer/core';
-import type { Plugin, PluginFunctions, ViewerState } from '@react-pdf-viewer/core';
-
 import { Rotate, RotateProps } from './Rotate';
 import { RotateButton } from './RotateButton';
 import { RotateMenuItem } from './RotateMenuItem';
-import { RotateDirection } from './structs/RotateDirection';
+import { RotatePage, RotatePageProps } from './RotatePage';
 import type { StoreProps } from './types/StoreProps';
 
 export interface RotateDecoratorProps {
@@ -22,6 +21,7 @@ export interface RotateDecoratorProps {
 
 export interface RotatePlugin extends Plugin {
     Rotate(props: RotateProps): React.ReactElement;
+    RotatePage(props: RotatePageProps): React.ReactElement;
     RotateBackwardButton(): React.ReactElement;
     RotateBackwardMenuItem(props: RotateDecoratorProps): React.ReactElement;
     RotateForwardButton(): React.ReactElement;
@@ -29,13 +29,7 @@ export interface RotatePlugin extends Plugin {
 }
 
 export const rotatePlugin = (): RotatePlugin => {
-    const store = React.useMemo(
-        () =>
-            createStore<StoreProps>({
-                rotation: 0,
-            }),
-        []
-    );
+    const store = React.useMemo(() => createStore<StoreProps>(), []);
 
     const RotateDecorator = (props: RotateProps) => <Rotate {...props} store={store} />;
 
@@ -75,18 +69,18 @@ export const rotatePlugin = (): RotatePlugin => {
         </RotateDecorator>
     );
 
+    const RotatePageDecorator = (props: RotatePageProps) => <RotatePage {...props} store={store} />;
+
     return {
         install: (pluginFunctions: PluginFunctions) => {
             store.update('rotate', pluginFunctions.rotate);
-        },
-        onViewerStateChange: (viewerState: ViewerState) => {
-            store.update('rotation', viewerState.rotation);
-            return viewerState;
+            store.update('rotatePage', pluginFunctions.rotatePage);
         },
         Rotate: RotateDecorator,
         RotateBackwardButton: RotateBackwardButtonDecorator,
         RotateBackwardMenuItem: RotateBackwardMenuItemDecorator,
         RotateForwardButton: RotateForwardButtonDecorator,
         RotateForwardMenuItem: RotateForwardMenuItemDecorator,
+        RotatePage: RotatePageDecorator,
     };
 };

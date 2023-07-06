@@ -1,9 +1,8 @@
-import * as React from 'react';
 import { Button, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import { highlightPlugin, Trigger } from '@react-pdf-viewer/highlight';
-
 import type { HighlightArea, RenderHighlightsProps } from '@react-pdf-viewer/highlight';
+import { highlightPlugin, Trigger } from '@react-pdf-viewer/highlight';
+import * as React from 'react';
 
 const IndexPage = () => {
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
@@ -70,7 +69,7 @@ const IndexPage = () => {
                 flexDirection: 'column',
                 height: '50rem',
                 margin: '5rem auto',
-                width: '64rem',
+                width: '50rem',
             }}
         >
             <div

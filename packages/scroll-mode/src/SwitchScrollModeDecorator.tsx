@@ -3,13 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap } from '@react-pdf-viewer/core';
 import { LocalizationContext, ScrollMode } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { HorizontalScrollingIcon } from './HorizontalScrollingIcon';
+import { PageScrollingIcon } from './PageScrollingIcon';
 import { VerticalScrollingIcon } from './VerticalScrollingIcon';
 import { WrappedScrollingIcon } from './WrappedScrollingIcon';
 
@@ -31,18 +32,35 @@ export const SwitchScrollModeDecorator: React.FC<{
 
     switch (mode) {
         case ScrollMode.Horizontal:
-            label = (l10n && l10n.scrollMode ? l10n.scrollMode.horizontalScrolling : 'Horizontal scrolling') as string;
+            label =
+                l10n && l10n.scrollMode
+                    ? ((l10n.scrollMode as LocalizationMap).horizontalScrolling as string)
+                    : 'Horizontal scrolling';
             icon = <HorizontalScrollingIcon />;
             break;
 
+        case ScrollMode.Page:
+            label =
+                l10n && l10n.scrollMode
+                    ? ((l10n.scrollMode as LocalizationMap).pageScrolling as string)
+                    : 'Page scrolling';
+            icon = <PageScrollingIcon />;
+            break;
+
         case ScrollMode.Wrapped:
-            label = (l10n && l10n.scrollMode ? l10n.scrollMode.wrappedScrolling : 'Wrapped scrolling') as string;
+            label =
+                l10n && l10n.scrollMode
+                    ? ((l10n.scrollMode as LocalizationMap).wrappedScrolling as string)
+                    : 'Wrapped scrolling';
             icon = <WrappedScrollingIcon />;
             break;
 
         case ScrollMode.Vertical:
         default:
-            label = (l10n && l10n.scrollMode ? l10n.scrollMode.verticalScrolling : 'Vertical scrolling') as string;
+            label =
+                l10n && l10n.scrollMode
+                    ? ((l10n.scrollMode as LocalizationMap).verticalScrolling as string)
+                    : 'Vertical scrolling';
             icon = <VerticalScrollingIcon />;
             break;
     }

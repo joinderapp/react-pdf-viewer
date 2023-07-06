@@ -3,18 +3,17 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { useEscape } from '../hooks/useEscape';
 import { useToggle } from '../hooks/useToggle';
-import { ToggleStatus } from '../structs/ToggleStatus';
 import { Position } from '../structs/Position';
-import { TooltipBody } from './TooltipBody';
-import { uniqueId } from '../utils/uniqueId';
+import { ToggleStatus } from '../structs/ToggleStatus';
 import type { Offset } from '../types/Offset';
+import { uniqueId } from '../utils/uniqueId';
+import { TooltipBody } from './TooltipBody';
 
 type RenderTooltipContent = () => React.ReactNode;
 
@@ -28,7 +27,7 @@ export const Tooltip: React.FC<{
     const { opened, toggle } = useToggle(false);
     const targetRef = React.useRef<HTMLDivElement>();
     const contentRef = React.useRef<HTMLDivElement>();
-    const controlsSuffix = ariaControlsSuffix || `${uniqueId()}`;
+    const controlsSuffix = React.useMemo(() => ariaControlsSuffix || `${uniqueId()}`, []);
 
     useEscape(() => {
         if (targetRef.current && document.activeElement && targetRef.current.contains(document.activeElement)) {
@@ -48,12 +47,12 @@ export const Tooltip: React.FC<{
         // that is focused on automatically
         // For example
         //  <Popover
-        //      renderTarget=() => {
+        //      target=() => {
         //          <Tooltip
         //              target=<MinimalButton />
         //          />
         //      }
-        //      renderContent=() => <Menu />
+        //      content=() => <Menu />
         //  />
         // The following events happen when the tooltip gets focused:
         // - The tooltip is shown

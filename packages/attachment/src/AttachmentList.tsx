@@ -3,18 +3,18 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap } from '@react-pdf-viewer/core';
 import {
     classNames,
-    useIsomorphicLayoutEffect,
     LocalizationContext,
     TextDirection,
     ThemeContext,
+    useIsomorphicLayoutEffect,
 } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { downloadFile } from './downloadFile';
 import type { FileItem } from './types/FileItem';
 
@@ -27,7 +27,10 @@ export const AttachmentList: React.FC<{
     const isRtl = direction === TextDirection.RightToLeft;
     const attachmentItemsRef = React.useRef<HTMLElement[]>([]);
 
-    const clickDownloadLabel = l10n && l10n.attachment ? l10n.attachment.clickToDownload : 'Click to download';
+    const clickDownloadLabel =
+        l10n && l10n.attachment
+            ? ((l10n.attachment as LocalizationMap).clickToDownload as string)
+            : 'Click to download';
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         switch (e.key) {
@@ -111,7 +114,7 @@ export const AttachmentList: React.FC<{
                     className="rpv-attachment__item"
                     key={file.fileName}
                     tabIndex={-1}
-                    title={clickDownloadLabel as string}
+                    title={clickDownloadLabel}
                     type="button"
                     onClick={() => downloadFile(file.fileName, file.data)}
                 >

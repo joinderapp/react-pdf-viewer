@@ -3,18 +3,17 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { Modal } from '@react-pdf-viewer/core';
 import type { Store, Toggle } from '@react-pdf-viewer/core';
-
+import { Modal } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { PropertiesModal } from './PropertiesModal';
 import { ShowPropertiesButton } from './ShowPropertiesButton';
-import { useDocument } from './useDocument';
 import type { RenderShowPropertiesProps } from './types/RenderShowPropertiesProps';
 import type { StoreProps } from './types/StoreProps';
+import { useDocument } from './useDocument';
 
 type RenderShowProperties = (props: RenderShowPropertiesProps) => React.ReactElement;
 

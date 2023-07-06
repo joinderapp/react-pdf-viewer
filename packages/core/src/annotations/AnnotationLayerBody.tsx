@@ -3,12 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
-import { SpecialZoomLevel } from '../structs/SpecialZoomLevel';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import type { Destination } from '../types/Destination';
+import type { PdfJs } from '../types/PdfJs';
+import type { Plugin } from '../types/Plugin';
 import { AnnotationType } from './AnnotationType';
 import { Caret } from './Caret';
 import { Circle } from './Circle';
@@ -27,38 +29,39 @@ import { Stamp } from './Stamp';
 import { StrikeOut } from './StrikeOut';
 import { Text } from './Text';
 import { Underline } from './Underline';
-import type { PdfJs } from '../types/PdfJs';
-import type { Plugin } from '../types/Plugin';
 
 export const AnnotationLayerBody: React.FC<{
     annotations: PdfJs.Annotation[];
-    containerRef: React.RefObject<HTMLDivElement | null>;
     doc: PdfJs.PdfDocument;
+    outlines: PdfJs.Outline[];
     page: PdfJs.Page;
     pageIndex: number;
     plugins: Plugin[];
     rotation: number;
     scale: number;
     onExecuteNamedAction(action: string): void;
-    onJumpToDest(pageIndex: number, bottomOffset: number, leftOffset: number, scaleTo: number | SpecialZoomLevel): void;
+    onJumpFromLinkAnnotation(destination: Destination): void;
+    onJumpToDest(destination: Destination): void;
 }> = ({
     annotations,
-    containerRef,
     doc,
+    outlines,
     page,
     pageIndex,
     plugins,
     rotation,
     scale,
     onExecuteNamedAction,
+    onJumpFromLinkAnnotation,
     onJumpToDest,
 }) => {
+    const containerRef = React.useRef<HTMLDivElement>();
     const viewport = page.getViewport({ rotation, scale });
     const clonedViewPort = viewport.clone({ dontFlip: true });
 
     const filterAnnotations = annotations.filter((annotation) => !annotation.parentId);
 
-    React.useEffect(() => {
+    useIsomorphicLayoutEffect(() => {
         const container = containerRef.current;
         if (!container) {
             return;
@@ -78,7 +81,11 @@ export const AnnotationLayerBody: React.FC<{
     }, []);
 
     return (
-        <>
+        <div
+            ref={containerRef}
+            className="rpv-core__annotation-layer"
+            data-testid={`core__annotation-layer-${pageIndex}`}
+        >
             {filterAnnotations.map((annotation) => {
                 const childAnnotation = annotations.find((item) => item.parentId === annotation.id);
                 switch (annotation.annotationType) {
@@ -131,10 +138,15 @@ export const AnnotationLayerBody: React.FC<{
                             <Link
                                 key={annotation.id}
                                 annotation={annotation}
+                                annotationContainerRef={containerRef}
                                 doc={doc}
+                                outlines={outlines}
                                 page={page}
+                                pageIndex={pageIndex}
+                                scale={scale}
                                 viewport={clonedViewPort}
                                 onExecuteNamedAction={onExecuteNamedAction}
+                                onJumpFromLinkAnnotation={onJumpFromLinkAnnotation}
                                 onJumpToDest={onJumpToDest}
                             />
                         );
@@ -209,6 +221,6 @@ export const AnnotationLayerBody: React.FC<{
                         return <React.Fragment key={annotation.id}></React.Fragment>;
                 }
             })}
-        </>
+        </div>
     );
 };

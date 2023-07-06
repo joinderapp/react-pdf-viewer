@@ -3,16 +3,15 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
+import type { PdfJs } from '../types/PdfJs';
+import type { Slot } from '../types/Slot';
 import { AnnotationBorderStyleType } from './AnnotationBorderStyleType';
 import { PopupWrapper } from './PopupWrapper';
 import { useTogglePopup } from './useTogglePopup';
-import type { PdfJs } from '../types/PdfJs';
-import type { Slot } from '../types/Slot';
 
 interface RenderChildrenProps {
     popup: {

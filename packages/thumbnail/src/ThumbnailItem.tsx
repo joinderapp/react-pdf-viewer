@@ -3,13 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap, PdfJs } from '@react-pdf-viewer/core';
 import { LocalizationContext } from '@react-pdf-viewer/core';
-import type { PdfJs } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { SpinnerContext } from './SpinnerContext';
 
 export const ThumbnailItem: React.FC<{
@@ -26,9 +25,10 @@ export const ThumbnailItem: React.FC<{
     const renderTask = React.useRef<PdfJs.PageRenderTask>();
     const [src, setSrc] = React.useState('');
 
-    const thumbnailLabel = (
-        l10n && l10n.thumbnail ? l10n.thumbnail.thumbnailLabel : 'Thumbnail of page {{pageIndex}}'
-    ) as string;
+    const thumbnailLabel =
+        l10n && l10n.thumbnail
+            ? ((l10n.thumbnail as LocalizationMap).thumbnailLabel as string)
+            : 'Thumbnail of page {{pageIndex}}';
 
     React.useEffect(() => {
         const task = renderTask.current;

@@ -3,20 +3,20 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { useClickOutside } from '../hooks/useClickOutside';
-import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { useEscape } from '../hooks/useEscape';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { useLockScroll } from '../hooks/useLockScroll';
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
 import { classNames } from '../utils/classNames';
 
 export const ModalBody: React.FC<{
     ariaControlsSuffix: string;
+    children?: React.ReactNode;
     closeOnClickOutside: boolean;
     closeOnEscape: boolean;
     onToggle(): void;

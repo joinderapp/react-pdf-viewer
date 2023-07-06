@@ -3,15 +3,15 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
 import { classNames } from '../utils/classNames';
 
 export const Icon: React.FC<{
+    children?: React.ReactNode;
     // If this option is `true`, the icon will not be flipped
     ignoreDirection?: boolean;
     size?: number;

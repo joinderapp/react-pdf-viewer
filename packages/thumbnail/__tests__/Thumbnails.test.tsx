@@ -1,7 +1,6 @@
-import * as React from 'react';
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import { Viewer } from '@react-pdf-viewer/core';
-
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
 import { thumbnailPlugin } from '../src';
@@ -50,8 +49,11 @@ test('Test <Thumbnails />', async () => {
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__text-layer-2');
 
-    const pagesContainer = getByTestId('core__inner-pages');
+    const pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,
@@ -77,10 +79,10 @@ test('Test <Thumbnails />', async () => {
 
     const firstThumbnailImage = await findByLabelText('Thumbnail of page 1');
     let src = firstThumbnailImage.getAttribute('src');
-    expect(src.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACFCAYAAACt+l1zAAAABmJLR0QA/wD/AP+gvaeTAAAKgUlEQV'
+    expect(src?.slice(-100)).toEqual(
+        'g5q5u9+1tNDZs+y0tLZiUW7cJm7ZQhRFYcdbf7xnA1vITNN8XeAtW4h0f8mDumBkEMHIIIL5Hw+y6qIMqKXCAAAAAElFTkSuQmCC'
     );
-    expect(src.length).toEqual(3710);
+    expect(src?.length).toEqual(3662);
 
     // Wait until the second thumbnail is rendered
     let secondThumbnailContainer = await findByTestId('thumbnail__container-1');
@@ -88,8 +90,8 @@ test('Test <Thumbnails />', async () => {
 
     const secondThumbnailImage = await findByLabelText('Thumbnail of page 2');
     src = secondThumbnailImage.getAttribute('src');
-    expect(src.substring(0, 100)).toEqual(
+    expect(src?.substring(0, 100)).toEqual(
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACFCAYAAACt+l1zAAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV'
     );
-    expect(src.length).toEqual(11582);
+    expect(src?.length).toEqual(11582);
 });

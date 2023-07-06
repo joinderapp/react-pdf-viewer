@@ -3,11 +3,11 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { Plugin } from '@react-pdf-viewer/core';
+import * as React from 'react';
 
 // Types
 export interface FlagKeyword {
@@ -57,6 +57,7 @@ export interface RenderSearchProps {
     changeMatchCase(matchCase: boolean): void;
     changeWholeWords(wholeWords: boolean): void;
     currentMatch: number;
+    isDocumentLoaded: boolean;
     jumpToMatch(index: number): Match | null;
     jumpToNextMatch(): Match | null;
     jumpToPreviousMatch(): Match | null;
@@ -90,10 +91,31 @@ export interface SearchPlugin extends Plugin {
     setTargetPages(targetPageFilter: SearchTargetPageFilter): void;
 }
 
+export interface HighlightArea {
+    keyword: RegExp;
+    keywordStr: string;
+    numPages: number;
+    pageIndex: number;
+    // The position of the highlight element
+    left: number;
+    top: number;
+    // The size of the highlight element
+    height: number;
+    width: number;
+    // The size of the page in pixels
+    pageHeight: number;
+    pageWidth: number;
+}
+export interface RenderHighlightsProps {
+    getCssProperties(area: HighlightArea): React.CSSProperties;
+    highlightAreas: HighlightArea[];
+}
+
 export interface SearchPluginProps {
     enableShortcuts?: boolean;
     // The keyword that will be highlighted in all pages
     keyword?: SingleKeyword | SingleKeyword[];
+    renderHighlights?(props: RenderHighlightsProps): React.ReactElement;
     onHighlightKeyword?(props: OnHighlightKeyword): void;
 }
 

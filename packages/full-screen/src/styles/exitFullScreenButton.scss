@@ -3,14 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 .rpv-full-screen__exit-button {
     bottom: 0;
     padding: 0.5rem;
     position: fixed;
-    z-index: 1;
+    z-index: 2;
 
     &--ltr {
         right: 0;

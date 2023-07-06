@@ -3,10 +3,10 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap, Toggle } from '@react-pdf-viewer/core';
 import {
     classNames,
     LocalizationContext,
@@ -20,7 +20,7 @@ import {
     TextDirection,
     ThemeContext,
 } from '@react-pdf-viewer/core';
-import type { LocalizationMap, Toggle } from '@react-pdf-viewer/core';
+import * as React from 'react';
 
 const DEFAULT_LEVELS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 const PORTAL_OFFSET = { left: 0, top: 8 };
@@ -34,17 +34,18 @@ export const ZoomPopover: React.FC<{
     const { direction } = React.useContext(ThemeContext);
     const isRtl = direction === TextDirection.RightToLeft;
 
-    const getSpcialLevelLabel = (level: SpecialZoomLevel): string | LocalizationMap => {
+    const getSpcialLevelLabel = (level: SpecialZoomLevel): string => {
         switch (level) {
             case SpecialZoomLevel.ActualSize:
-                return l10n && l10n.zoom ? l10n.zoom.actualSize : 'Actual size';
+                return l10n && l10n.zoom ? ((l10n.zoom as LocalizationMap).actualSize as string) : 'Actual size';
             case SpecialZoomLevel.PageFit:
-                return l10n && l10n.zoom ? l10n.zoom.pageFit : 'Page fit';
+                return l10n && l10n.zoom ? ((l10n.zoom as LocalizationMap).pageFit as string) : 'Page fit';
             case SpecialZoomLevel.PageWidth:
-                return l10n && l10n.zoom ? l10n.zoom.pageWidth : 'Page width';
+                return l10n && l10n.zoom ? ((l10n.zoom as LocalizationMap).pageWidth as string) : 'Page width';
         }
     };
-    const zoomDocumentLabel = l10n && l10n.zoom ? l10n.zoom.zoomDocument : 'Zoom document';
+    const zoomDocumentLabel =
+        l10n && l10n.zoom ? ((l10n.zoom as LocalizationMap).zoomDocument as string) : 'Zoom document';
 
     const renderTarget = (toggle: Toggle): React.ReactElement => {
         const click = (): void => {

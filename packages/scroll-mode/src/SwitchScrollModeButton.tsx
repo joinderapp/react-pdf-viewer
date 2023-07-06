@@ -3,22 +3,29 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import { MinimalButton, Position, ScrollMode, Tooltip } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { SwitchScrollModeDecorator } from './SwitchScrollModeDecorator';
 import type { RenderSwitchScrollModeProps } from './types/RenderSwitchScrollModeProps';
 
 const TOOLTIP_OFFSET = { left: 0, top: 8 };
 
-export const SwitchScrollModeButton: React.FC<RenderSwitchScrollModeProps> = ({ isSelected, mode, onClick }) => {
+export const SwitchScrollModeButton: React.FC<RenderSwitchScrollModeProps> = ({
+    isDisabled,
+    isSelected,
+    mode,
+    onClick,
+}) => {
     let testId = '';
     switch (mode) {
         case ScrollMode.Horizontal:
             testId = 'scroll-mode__horizontal-button';
+            break;
+        case ScrollMode.Page:
+            testId = 'scroll-mode__page-button';
             break;
         case ScrollMode.Wrapped:
             testId = 'scroll-mode__wrapped-button';
@@ -38,6 +45,7 @@ export const SwitchScrollModeButton: React.FC<RenderSwitchScrollModeProps> = ({ 
                     target={
                         <MinimalButton
                             ariaLabel={props.label}
+                            isDisabled={isDisabled}
                             isSelected={isSelected}
                             testId={testId}
                             onClick={props.onClick}

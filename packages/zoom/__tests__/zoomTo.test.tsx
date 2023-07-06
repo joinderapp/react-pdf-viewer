@@ -1,9 +1,8 @@
-import * as React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
 import { PrimaryButton, Viewer } from '@react-pdf-viewer/core';
-
+import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
-import { zoomPlugin } from '../src/index';
+import { zoomPlugin } from '../src';
 
 const TestCallZoomMethod: React.FC<{
     fileUrl: Uint8Array;
@@ -23,8 +22,8 @@ const TestCallZoomMethod: React.FC<{
             <div
                 style={{
                     border: '1px solid rgba(0, 0, 0, .3)',
-                    height: '720px',
-                    width: '640px',
+                    height: '50rem',
+                    width: '50rem',
                 }}
             >
                 <Viewer fileUrl={fileUrl} plugins={[zoomPluginInstance]} />
@@ -34,8 +33,19 @@ const TestCallZoomMethod: React.FC<{
 };
 
 test('call zoom() method', async () => {
-    const { findByText, getByTestId } = render(<TestCallZoomMethod fileUrl={global['__MULTIPLE_PAGES_PDF__']} />);
-    mockIsIntersecting(getByTestId('core__viewer'), true);
+    const { findByTestId, findByText, getByTestId } = render(
+        <TestCallZoomMethod fileUrl={global['__MULTIPLE_PAGES_PDF__']} />
+    );
+
+    const viewerEle = getByTestId('core__viewer');
+    mockIsIntersecting(viewerEle, true);
+    viewerEle['__jsdomMockClientHeight'] = 558;
+    viewerEle['__jsdomMockClientWidth'] = 798;
+
+    // Wait until the document is loaded completely
+    await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__text-layer-1');
 
     // Now zoom the document
     const zoomButton = await screen.findByText('Zoom to 150%');

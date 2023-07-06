@@ -3,11 +3,9 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { createStore } from '@react-pdf-viewer/core';
 import type {
     Plugin,
     PluginFunctions,
@@ -17,21 +15,23 @@ import type {
     RenderViewer,
     Slot,
 } from '@react-pdf-viewer/core';
-
+import { createStore } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { EMPTY_KEYWORD_REGEXP } from './constants';
+import { Highlights } from './Highlights';
 import { normalizeSingleKeyword } from './normalizeKeyword';
 import { Search, SearchProps } from './Search';
 import { ShortcutHandler } from './ShortcutHandler';
 import { ShowSearchPopover, ShowSearchPopoverProps } from './ShowSearchPopover';
 import { ShowSearchPopoverButton } from './ShowSearchPopoverButton';
-import { Tracker } from './Tracker';
-import { useSearch } from './useSearch';
-import type { OnHighlightKeyword } from './types/OnHighlightKeyword';
 import type { Match } from './types/Match';
 import type { NormalizedKeyword } from './types/NormalizedKeyword';
+import type { OnHighlightKeyword } from './types/OnHighlightKeyword';
+import type { RenderHighlightsProps } from './types/RenderHighlightsProps';
 import type { SearchTargetPageFilter } from './types/SearchTargetPage';
 import type { SingleKeyword } from './types/SingleKeyword';
 import type { StoreProps } from './types/StoreProps';
+import { useSearch } from './useSearch';
 
 export interface SearchPlugin extends Plugin {
     Search(props: SearchProps): React.ReactElement;
@@ -49,6 +49,7 @@ export interface SearchPluginProps {
     enableShortcuts?: boolean;
     // The keyword that will be highlighted in all pages
     keyword?: SingleKeyword | SingleKeyword[];
+    renderHighlights?(props: RenderHighlightsProps): React.ReactElement;
     onHighlightKeyword?(props: OnHighlightKeyword): void;
 }
 
@@ -64,12 +65,14 @@ export const searchPlugin = (props?: SearchPluginProps): SearchPlugin => {
     const store = React.useMemo(
         () =>
             createStore<StoreProps>({
+                initialKeyword:
+                    props && props.keyword ? (Array.isArray(props.keyword) ? props.keyword : [props.keyword]) : [],
+                keyword: props && props.keyword ? normalizeKeywords(props.keyword) : [EMPTY_KEYWORD_REGEXP],
                 matchPosition: {
                     matchIndex: -1,
                     pageIndex: -1,
                 },
                 renderStatus: new Map<number, PluginOnTextLayerRender>(),
-                keyword: props && props.keyword ? normalizeKeywords(props.keyword) : [EMPTY_KEYWORD_REGEXP],
             }),
         []
     );
@@ -107,10 +110,11 @@ export const searchPlugin = (props?: SearchPluginProps): SearchPlugin => {
     };
 
     const renderPageLayer = (renderProps: PluginRenderPageLayer) => (
-        <Tracker
+        <Highlights
             key={renderProps.pageIndex}
             numPages={renderProps.doc.numPages}
             pageIndex={renderProps.pageIndex}
+            renderHighlights={props?.renderHighlights}
             store={store}
             onHighlightKeyword={searchPluginProps.onHighlightKeyword}
         />
@@ -118,8 +122,11 @@ export const searchPlugin = (props?: SearchPluginProps): SearchPlugin => {
 
     return {
         install: (pluginFunctions: PluginFunctions) => {
+            const initialKeyword =
+                props && props.keyword ? (Array.isArray(props.keyword) ? props.keyword : [props.keyword]) : [];
             const keyword = props && props.keyword ? normalizeKeywords(props.keyword) : [EMPTY_KEYWORD_REGEXP];
 
+            store.update('initialKeyword', initialKeyword);
             store.update('jumpToDestination', pluginFunctions.jumpToDestination);
             store.update('jumpToPage', pluginFunctions.jumpToPage);
             store.update('keyword', keyword);

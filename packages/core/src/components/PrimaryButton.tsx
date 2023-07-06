@@ -3,15 +3,15 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
 import { classNames } from '../utils/classNames';
 
 export const PrimaryButton: React.FC<{
+    children?: React.ReactNode;
     testId?: string;
     onClick(): void;
 }> = ({ children, testId, onClick }) => {

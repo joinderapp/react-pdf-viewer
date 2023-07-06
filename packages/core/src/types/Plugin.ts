@@ -3,11 +3,10 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { LayerRenderStatus } from '../structs/LayerRenderStatus';
 import type { OpenFile } from './OpenFile';
 import type { PdfJs } from './PdfJs';
@@ -45,11 +44,17 @@ export interface PluginOnCanvasLayerRender {
 }
 
 export interface PluginRenderPageLayer {
+    canvasLayerRef: React.MutableRefObject<HTMLCanvasElement>;
+    // Is the canvas layer rendered completely?
+    canvasLayerRendered: boolean;
     doc: PdfJs.PdfDocument;
     height: number;
     pageIndex: number;
     rotation: number;
     scale: number;
+    textLayerRef: React.MutableRefObject<HTMLDivElement>;
+    // Is the text layer rendered completely?
+    textLayerRendered: boolean;
     width: number;
 }
 

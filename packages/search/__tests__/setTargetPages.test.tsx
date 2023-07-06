@@ -1,11 +1,10 @@
-import * as React from 'react';
-import { findAllByTitle, getAllByTitle, queryAllByTitle } from '@testing-library/dom';
-import { fireEvent, render, screen } from '@testing-library/react';
-
-import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { Viewer } from '@react-pdf-viewer/core';
-import { searchPlugin } from '../src/index';
-import type { SingleKeyword } from '../src/types/SingleKeyword';
+import { findAllByTitle, getAllByTitle, queryAllByTitle, waitForElementToBeRemoved } from '@testing-library/dom';
+import { fireEvent, render, screen } from '@testing-library/react';
+import * as React from 'react';
+import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
+import { searchPlugin } from '../src';
+import type { SingleKeyword } from '../src';
 
 const TestSetTargetPages: React.FC<{
     fileUrl: Uint8Array;
@@ -25,8 +24,8 @@ const TestSetTargetPages: React.FC<{
             <div
                 style={{
                     border: '1px solid rgba(0, 0, 0, .3)',
-                    height: '720px',
-                    width: '720px',
+                    height: '50rem',
+                    width: '50rem',
                 }}
             >
                 <Viewer fileUrl={fileUrl} plugins={[searchPluginInstance]} />
@@ -47,33 +46,43 @@ test('setTargetPages() method', async () => {
     const { findByText, findByTestId, getByTestId } = render(
         <TestSetTargetPages fileUrl={global['__MULTIPLE_PAGES_PDF__']} keywords={keywords} />
     );
-    mockIsIntersecting(getByTestId('core__viewer'), true);
+    const viewerEle = getByTestId('core__viewer');
+    viewerEle['__jsdomMockClientHeight'] = 798;
+    viewerEle['__jsdomMockClientWidth'] = 798;
+    mockIsIntersecting(viewerEle, true);
+
+    // Wait until the document is loaded completely
+    await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
 
     const highlightButton = await screen.findByText('Highlight keywords');
     fireEvent.click(highlightButton);
 
     // There is no result on the first page because we ignore it
-    const firstPage = await findByTestId('core__page-layer-0');
     await findByText('A Simple PDF File');
 
-    let highlights = queryAllByTitle(firstPage, 'text');
+    let searchHighlights = await findByTestId('search__highlights-0');
+    let highlights = queryAllByTitle(searchHighlights, 'text');
     expect(highlights.length).toEqual(0);
 
     // Search on the second page
-    const secondPage = await findByTestId('core__page-layer-1');
     await findByText('Simple PDF File 2');
 
     // Found 13 texts that match `text`
-    highlights = await findAllByTitle(secondPage, 'text');
+    searchHighlights = await findByTestId('search__highlights-1');
+    highlights = await findAllByTitle(searchHighlights, 'text');
     expect(highlights.length).toEqual(13);
     expect(highlights[0].getAttribute('title')).toEqual('text');
     expect(highlights[0]).toHaveClass('rpv-search__highlight');
 
     // Found 1 text that match `Boring`
-    highlights = getAllByTitle(secondPage, 'Boring');
+    highlights = getAllByTitle(searchHighlights, 'Boring');
     expect(highlights.length).toEqual(1);
     expect(highlights[0].getAttribute('title')).toEqual('Boring');
     expect(highlights[0]).toHaveClass('rpv-search__highlight');
 
-    expect(secondPage.querySelectorAll('.rpv-search__highlight[title="text"]').length).toEqual(13);
+    expect(searchHighlights.querySelectorAll('.rpv-search__highlight[title="text"]').length).toEqual(13);
 });

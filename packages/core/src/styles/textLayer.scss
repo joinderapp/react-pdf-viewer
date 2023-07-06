@@ -3,7 +3,7 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 .rpv-core__text-layer {
@@ -21,11 +21,19 @@
 
     // Misc
     line-height: 1;
-}
 
-.rpv-core__text-layer ::selection {
-    background-color: var(--rpv-core__text-layer-text--selection-background-color);
-    color: var(--rpv-core__text-layer-text--selection-color);
+    // Make it displayed on top of the shadow layer
+    // so users can select text of pages
+    z-index: 1;
+
+    span::selection {
+        background-color: var(--rpv-core__text-layer-text--selection-background-color);
+        color: var(--rpv-core__text-layer-text--selection-color);
+    }
+
+    br::selection {
+        color: transparent;
+    }
 }
 
 .rpv-core__text-layer-text {

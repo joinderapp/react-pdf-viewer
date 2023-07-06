@@ -3,17 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { getPage, useIntersectionObserver } from '@react-pdf-viewer/core';
 import type { PdfJs, VisibilityChanged } from '@react-pdf-viewer/core';
-
+import { getPage, useIntersectionObserver, useIsMounted } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { SpinnerContext } from './SpinnerContext';
 import { ThumbnailItem } from './ThumbnailItem';
-
-const THUMBNAIL_WIDTH = 100;
 
 interface PageState {
     height: number;
@@ -26,12 +23,26 @@ export const ThumbnailContainer: React.FC<{
     doc: PdfJs.PdfDocument;
     pageHeight: number;
     pageIndex: number;
+    pageRotation: number;
     pageWidth: number;
     rotation: number;
     shouldRender: boolean;
+    thumbnailWidth: number;
     onRenderCompleted: (pageIndex: number) => void;
     onVisibilityChanged(pageIndex: number, visibility: VisibilityChanged): void;
-}> = ({ doc, pageHeight, pageIndex, pageWidth, rotation, shouldRender, onRenderCompleted, onVisibilityChanged }) => {
+}> = ({
+    doc,
+    pageHeight,
+    pageIndex,
+    pageRotation,
+    pageWidth,
+    rotation,
+    shouldRender,
+    thumbnailWidth,
+    onRenderCompleted,
+    onVisibilityChanged,
+}) => {
+    const isMounted = useIsMounted();
     const [pageSize, setPageSize] = React.useState<PageState>({
         height: pageHeight,
         page: null,
@@ -41,26 +52,27 @@ export const ThumbnailContainer: React.FC<{
     const { page, height, width } = pageSize;
 
     const scale = width / height;
-    const isVertical = Math.abs(rotation) % 180 === 0;
-    const w = isVertical ? THUMBNAIL_WIDTH : THUMBNAIL_WIDTH / scale;
-    const h = isVertical ? THUMBNAIL_WIDTH / scale : THUMBNAIL_WIDTH;
+    const isVertical = Math.abs(rotation + pageRotation) % 180 === 0;
+    const w = isVertical ? thumbnailWidth : thumbnailWidth / scale;
+    const h = isVertical ? thumbnailWidth / scale : thumbnailWidth;
 
     React.useEffect(() => {
         if (shouldRender) {
             getPage(doc, pageIndex).then((pdfPage) => {
                 const viewport = pdfPage.getViewport({ scale: 1 });
-                setPageSize({
-                    height: viewport.height,
-                    page: pdfPage,
-                    viewportRotation: viewport.rotation,
-                    width: viewport.width,
-                });
+                isMounted.current &&
+                    setPageSize({
+                        height: viewport.height,
+                        page: pdfPage,
+                        viewportRotation: viewport.rotation,
+                        width: viewport.width,
+                    });
             });
         }
     }, [shouldRender]);
 
     // To support the document which is already rotated
-    const rotationNumber = (rotation + pageSize.viewportRotation) % 360;
+    const rotationNumber = (pageSize.viewportRotation + rotation + pageRotation) % 360;
 
     const containerRef = useIntersectionObserver({
         onVisibilityChanged: (visibility) => {

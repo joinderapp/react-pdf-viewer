@@ -3,36 +3,36 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { attachmentPlugin } from '@react-pdf-viewer/attachment';
-import { bookmarkPlugin } from '@react-pdf-viewer/bookmark';
-import { classNames, createStore, TextDirection } from '@react-pdf-viewer/core';
-import { thumbnailPlugin } from '@react-pdf-viewer/thumbnail';
-import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
-
 import type { AttachmentPlugin } from '@react-pdf-viewer/attachment';
+import { attachmentPlugin } from '@react-pdf-viewer/attachment';
 import type { BookmarkPlugin } from '@react-pdf-viewer/bookmark';
+import { bookmarkPlugin } from '@react-pdf-viewer/bookmark';
 import type {
+    PdfJs,
     Plugin,
     PluginFunctions,
-    PluginOnDocumentLoad,
     PluginOnAnnotationLayerRender,
+    PluginOnDocumentLoad,
     PluginOnTextLayerRender,
     PluginRenderPageLayer,
     RenderViewer,
     ViewerState,
 } from '@react-pdf-viewer/core';
+import { classNames, createStore, TextDirection } from '@react-pdf-viewer/core';
 import type { ThumbnailPlugin, ThumbnailPluginProps } from '@react-pdf-viewer/thumbnail';
+import { thumbnailPlugin } from '@react-pdf-viewer/thumbnail';
 import type { ToolbarPlugin, ToolbarPluginProps, ToolbarProps } from '@react-pdf-viewer/toolbar';
-
+import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
+import * as React from 'react';
 import { Sidebar, SidebarTab } from './Sidebar';
 import type { StoreProps } from './types/StoreProps';
 
 export interface DefaultLayoutPlugin extends Plugin {
     activateTab(index: number): void;
+    toggleTab(index: number): void;
     readonly attachmentPluginInstance: AttachmentPlugin;
     readonly bookmarkPluginInstance: BookmarkPlugin;
     readonly thumbnailPluginInstance: ThumbnailPlugin;
@@ -43,6 +43,7 @@ export interface DefaultLayoutPluginProps {
     thumbnailPlugin?: ThumbnailPluginProps;
     toolbarPlugin?: ToolbarPluginProps;
     renderToolbar?: (Toolbar: (props: ToolbarProps) => React.ReactElement) => React.ReactElement;
+    setInitialTab?: (doc: PdfJs.PdfDocument) => Promise<number>;
     sidebarTabs?: (defaultTabs: SidebarTab[]) => SidebarTab[];
 }
 
@@ -50,6 +51,7 @@ export const defaultLayoutPlugin = (props?: DefaultLayoutPluginProps): DefaultLa
     const store = React.useMemo(
         () =>
             createStore<StoreProps>({
+                isCurrentTabOpened: false,
                 currentTab: 0,
             }),
         []
@@ -77,6 +79,14 @@ export const defaultLayoutPlugin = (props?: DefaultLayoutPluginProps): DefaultLa
         toolbarPluginInstance,
         activateTab: (index: number) => {
             store.update('currentTab', index);
+        },
+        toggleTab: (index: number) => {
+            // Get the current active tab
+            const currentTab = store.get('currentTab');
+            store.update('isCurrentTabOpened', !store.get('isCurrentTabOpened'));
+            if (currentTab !== index) {
+                store.update('currentTab', index);
+            }
         },
         install: (pluginFunctions: PluginFunctions) => {
             // Install plugins
@@ -159,12 +169,18 @@ export const defaultLayoutPlugin = (props?: DefaultLayoutPluginProps): DefaultLa
                 }
             });
         },
-        onDocumentLoad: (props: PluginOnDocumentLoad) => {
+        onDocumentLoad: (documentLoadProps: PluginOnDocumentLoad) => {
             plugins.forEach((plugin) => {
                 if (plugin.onDocumentLoad) {
-                    plugin.onDocumentLoad(props);
+                    plugin.onDocumentLoad(documentLoadProps);
                 }
             });
+            if (props && props.setInitialTab) {
+                props.setInitialTab(documentLoadProps.doc).then((initialTab) => {
+                    store.update('currentTab', initialTab);
+                    store.update('isCurrentTabOpened', true);
+                });
+            }
         },
         onAnnotationLayerRender: (props: PluginOnAnnotationLayerRender) => {
             plugins.forEach((plugin) => {

@@ -3,7 +3,7 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 .rpv-bookmark__item {
@@ -29,7 +29,9 @@
     // Center the icon
     align-items: center;
     display: flex;
+    height: 1rem;
     margin-right: 0.25rem;
+    width: 1rem;
 }
 
 .rpv-bookmark__title {

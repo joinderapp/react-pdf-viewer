@@ -3,17 +3,13 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-// Types
 export type { ToolbarPluginProps, ToolbarProps, ToolbarSlot } from '@react-pdf-viewer/toolbar';
-export type { SidebarTab } from './Sidebar';
-
-// Plugin
-export * from './defaultLayoutPlugin';
-
-// Components
 export { BookmarkIcon } from './BookmarkIcon';
+export * from './defaultLayoutPlugin';
 export { FileIcon } from './FileIcon';
+export { setInitialTabFromPageMode } from './setInitialTabFromPageMode';
+export type { SidebarTab } from './Sidebar';
 export { ThumbnailIcon } from './ThumbnailIcon';

@@ -1,8 +1,7 @@
-import * as React from 'react';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
 import { Viewer } from '@react-pdf-viewer/core';
 import type { ToolbarProps, ToolbarSlot, TransformToolbarSlot } from '@react-pdf-viewer/toolbar';
-
+import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
 import { defaultLayoutPlugin } from '../src';
@@ -58,12 +57,18 @@ test('Test <CurrentPageLabel>', async () => {
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
+    await findByTestId('core__text-layer-2');
+    await findByTestId('core__annotation-layer-2');
 
     let pageLabel = await findByTestId('current-page-label');
     expect(pageLabel.textContent).toEqual('8');
 
     // Jump to the third page
-    const pagesContainer = getByTestId('core__inner-pages');
+    const pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,
@@ -90,7 +95,7 @@ test('Test <CurrentPageLabel>', async () => {
 
 test('Test <CurrentPageLabel> with custom page label', async () => {
     const pageLabelDocument = new Uint8Array(
-        fs.readFileSync(path.resolve(__dirname, '../../../samples/ignore/page-labels.pdf'))
+        fs.readFileSync(path.resolve(__dirname, '../../../samples/ignore/page-labels-2.pdf'))
     );
     const { findByTestId, getByTestId } = render(<TestCurrentPageLabel fileUrl={pageLabelDocument} />);
 
@@ -101,8 +106,14 @@ test('Test <CurrentPageLabel> with custom page label', async () => {
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
+    await findByTestId('core__text-layer-2');
+    await findByTestId('core__annotation-layer-2');
 
-    let pagesContainer = getByTestId('core__inner-pages');
+    const pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,
@@ -120,16 +131,16 @@ test('Test <CurrentPageLabel> with custom page label', async () => {
     await findByTestId('core__text-layer-0');
 
     let pageLabel = await findByTestId('current-page-label');
-    expect(pageLabel.textContent).toEqual('4(i)');
+    expect(pageLabel.textContent).toEqual('8(296)');
 
-    // Jump to the third page
+    // Jump to the 3rd page
     fireEvent.scroll(pagesContainer, {
         target: {
             scrollTop: 1782,
         },
     });
 
-    await findByTestId('core__text-layer-2');
+    await findByTestId('core__text-layer-3');
     pageLabel = await findByTestId('current-page-label');
-    expect(pageLabel.textContent).toEqual('4(iii)');
+    expect(pageLabel.textContent).toEqual('8(298)');
 });

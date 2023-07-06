@@ -3,11 +3,11 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { Plugin } from '@react-pdf-viewer/core';
+import * as React from 'react';
 
 // Types
 export interface HighlightArea {
@@ -20,9 +20,10 @@ export interface HighlightArea {
 
 export interface RenderHighlightContentProps {
     highlightAreas: HighlightArea[];
+    previewImage: string;
     selectedText: string;
     selectionRegion: HighlightArea;
-    selectionData: SelectionData;
+    selectionData?: SelectionData;
     cancel(): void;
 }
 
@@ -34,15 +35,24 @@ export interface RenderHighlightsProps {
 
 export interface RenderHighlightTargetProps {
     highlightAreas: HighlightArea[];
+    previewImage: string;
     selectedText: string;
     selectionRegion: HighlightArea;
-    selectionData: SelectionData;
+    selectionData?: SelectionData;
     cancel(): void;
     // Switch to the hightlighting state
     toggle(): void;
 }
 
+export interface DivText {
+    pageIndex: number;
+    divIndex: number;
+    textContent: string;
+}
+
 export interface SelectionData {
+    divTexts: DivText[];
+    selectedText: string;
     startPageIndex: number;
     endPageIndex: number;
     startOffset: number;
@@ -60,6 +70,7 @@ export enum Trigger {
 // Plugin
 export interface HighlightPlugin extends Plugin {
     jumpToHighlightArea(area: HighlightArea): void;
+    switchTrigger(trigger: Trigger): void;
 }
 
 export interface HighlightPluginProps {

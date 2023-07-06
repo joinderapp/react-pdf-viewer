@@ -3,11 +3,9 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-export type VerifyPassword = (password: string) => void;
-
 export interface DocumentAskPasswordEvent {
-    verifyPassword: VerifyPassword;
+    verifyPassword: (password: string) => void;
 }

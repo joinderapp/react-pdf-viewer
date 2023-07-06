@@ -3,7 +3,7 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 .rpv-search__popover {
@@ -35,11 +35,13 @@
 
     &-label {
         align-items: center;
+        cursor: pointer;
         display: flex;
         margin-bottom: 0.5rem;
     }
 
     &-label-checkbox {
+        cursor: pointer;
         margin-right: 0.25rem;
     }
 

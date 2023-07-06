@@ -3,12 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap } from '@react-pdf-viewer/core';
 import { classNames, LocalizationContext, TextDirection, ThemeContext } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { useDrop } from './useDrop';
 
 export const DropArea: React.FC<{
@@ -36,7 +36,9 @@ export const DropArea: React.FC<{
                             'rpv-drop__area-body--rtl': isRtl,
                         })}
                     >
-                        {l10n && l10n.drop ? l10n.drop.dragDropFile : 'Drag and drop a PDF document here'}
+                        {l10n && l10n.drop
+                            ? ((l10n.drop as LocalizationMap).dragDropFile as string)
+                            : 'Drag and drop a PDF document here'}
                     </div>
                 </div>
             )}

@@ -3,13 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { isMac } from '@react-pdf-viewer/core';
 import type { Store } from '@react-pdf-viewer/core';
-
+import { isMac } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { PrintStatus } from './structs/PrintStatus';
 import type { StoreProps } from './types/StoreProps';
 

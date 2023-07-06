@@ -3,14 +3,19 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import type { PdfJs } from '@react-pdf-viewer/core';
+import type { Destination, PdfJs } from '@react-pdf-viewer/core';
 
 export interface StoreProps {
     currentPage?: number;
     doc?: PdfJs.PdfDocument;
-    numberOfPages?: number;
+    jumpToDestination?(destination: Destination): void;
+    jumpToNextDestination?(): void;
+    jumpToNextPage(): void;
     jumpToPage?(pageIndex: number): void;
+    jumpToPreviousDestination?(): void;
+    jumpToPreviousPage(): void;
+    numberOfPages?: number;
 }

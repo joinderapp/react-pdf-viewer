@@ -1,7 +1,6 @@
-import * as React from 'react';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import { Button, Viewer } from '@react-pdf-viewer/core';
-
+import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
 import { thumbnailPlugin } from '../src';
@@ -16,7 +15,9 @@ const TestThumbnailsDynamicDocument = () => {
     );
 
     const [fileUrl, setFileUrl] = React.useState(global['__OPEN_PARAMS_PDF__']);
-    const thumbnailPluginInstance = thumbnailPlugin();
+    const thumbnailPluginInstance = thumbnailPlugin({
+        thumbnailWidth: 150,
+    });
     const { Thumbnails } = thumbnailPluginInstance;
 
     return (
@@ -71,20 +72,28 @@ const TestThumbnailsDynamicDocument = () => {
 test('Test <Thumbnails /> with dynamic document', async () => {
     const { findByLabelText, findByTestId, getByTestId, getByText } = render(<TestThumbnailsDynamicDocument />);
 
-    let viewerEle = getByTestId('core__viewer');
+    let viewerEle = await findByTestId('core__viewer');
     mockIsIntersecting(viewerEle, true);
-    viewerEle['__jsdomMockClientHeight'] = 558;
-    viewerEle['__jsdomMockClientWidth'] = 798;
+    viewerEle['__jsdomMockClientHeight'] = 798;
+    viewerEle['__jsdomMockClientWidth'] = 558;
 
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
+    await findByTestId('core__text-layer-2');
+    await findByTestId('core__annotation-layer-2');
+    await findByTestId('core__text-layer-3');
+    await findByTestId('core__annotation-layer-3');
 
-    const pagesContainer = getByTestId('core__inner-pages');
+    let pagesContainer = await findByTestId('core__inner-pages');
     pagesContainer.getBoundingClientRect = jest.fn(() => ({
         x: 0,
         y: 0,
-        height: 558,
-        width: 798,
+        height: 798,
+        width: 558,
         top: 0,
         right: 0,
         bottom: 0,
@@ -95,6 +104,7 @@ test('Test <Thumbnails /> with dynamic document', async () => {
 
     let thumbnailsListContainer = await findByTestId('thumbnail__list-container');
     mockIsIntersecting(thumbnailsListContainer, true);
+
     let thumbnailsContainer = await findByTestId('thumbnail__list');
     expect(thumbnailsContainer.querySelectorAll('.rpv-thumbnail__item').length).toEqual(8);
 
@@ -104,24 +114,49 @@ test('Test <Thumbnails /> with dynamic document', async () => {
 
     const firstThumbnailImage = await findByLabelText('Thumbnail of page 1');
     let src = firstThumbnailImage.getAttribute('src');
-    expect(src.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACFCAYAAACt+l1zAAAABmJLR0QA/wD/AP+gvaeTAAAKgUlEQV'
+    expect(src?.slice(-100)).toEqual(
+        '22YLv+E21w1r9JgxV/1eSYivjBo96rrXX/djM0J8W7I7EkpIWEIJCUsoIWEJJSQsoYSEJZT4P6H2Uzo/EGifAAAAAElFTkSuQmCC'
     );
-    expect(src.length).toEqual(3710);
+    expect(src?.length).toEqual(6458);
+    expect(firstThumbnailImage.getAttribute('width')).toEqual('150px');
+    expect(firstThumbnailImage.getAttribute('height')).toEqual('200px');
+
+    viewerEle = await findByTestId('core__viewer');
+    viewerEle['__jsdomMockClientHeight'] = 798;
+    viewerEle['__jsdomMockClientWidth'] = 558;
+    mockIsIntersecting(viewerEle, true);
 
     // Click the `Load document 2` button
     fireEvent.click(getByText('Load document 2'));
 
-    viewerEle = getByTestId('core__viewer');
-    mockIsIntersecting(viewerEle, true);
-    viewerEle['__jsdomMockClientHeight'] = 558;
-    viewerEle['__jsdomMockClientWidth'] = 798;
-
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
+    await findByTestId('core__text-layer-2');
+    await findByTestId('core__annotation-layer-2');
+    await findByTestId('core__text-layer-3');
+    await findByTestId('core__annotation-layer-3');
+
+    pagesContainer = await findByTestId('core__inner-pages');
+    pagesContainer.getBoundingClientRect = jest.fn(() => ({
+        x: 0,
+        y: 0,
+        height: 798,
+        width: 558,
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        toJSON: () => {},
+    }));
+    mockResize(pagesContainer);
 
     thumbnailsListContainer = await findByTestId('thumbnail__list-container');
     mockIsIntersecting(thumbnailsListContainer, true);
+
     thumbnailsContainer = await findByTestId('thumbnail__list');
     expect(thumbnailsContainer.querySelectorAll('.rpv-thumbnail__item').length).toEqual(4);
 
@@ -131,8 +166,10 @@ test('Test <Thumbnails /> with dynamic document', async () => {
 
     const secondThumbnailImage = await findByLabelText('Thumbnail of page 2');
     src = secondThumbnailImage.getAttribute('src');
-    expect(src.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACBCAYAAAA2ax9lAAAABmJLR0QA/wD/AP+gvaeTAAAByUlEQV'
+    expect(src?.substring(0, 100)).toEqual(
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAADCCAYAAACrHjsDAAAABmJLR0QA/wD/AP+gvaeTAAADCklEQV'
     );
-    expect(src.length).toEqual(734);
+    expect(src?.length).toEqual(1162);
+    expect(secondThumbnailImage.getAttribute('width')).toEqual('150px');
+    expect(secondThumbnailImage.getAttribute('height')).toEqual('194.11764705882354px');
 });

@@ -3,48 +3,46 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
-
-import * as React from 'react';
-
-import { fullScreenPlugin } from '@react-pdf-viewer/full-screen';
-import { getFilePlugin } from '@react-pdf-viewer/get-file';
-import { openPlugin } from '@react-pdf-viewer/open';
-import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
-import { printPlugin } from '@react-pdf-viewer/print';
-import { propertiesPlugin } from '@react-pdf-viewer/properties';
-import { rotatePlugin } from '@react-pdf-viewer/rotate';
-import { scrollModePlugin } from '@react-pdf-viewer/scroll-mode';
-import { searchPlugin } from '@react-pdf-viewer/search';
-import { selectionModePlugin } from '@react-pdf-viewer/selection-mode';
-import { themePlugin } from '@react-pdf-viewer/theme';
-import { zoomPlugin } from '@react-pdf-viewer/zoom';
 
 import type {
     Plugin,
     PluginFunctions,
+    PluginOnAnnotationLayerRender,
     PluginOnDocumentLoad,
+    PluginOnTextLayerRender,
     PluginRenderPageLayer,
     RenderViewer,
     ViewerState,
-    PluginOnTextLayerRender,
 } from '@react-pdf-viewer/core';
 import type { FullScreenPlugin, FullScreenPluginProps } from '@react-pdf-viewer/full-screen';
+import { fullScreenPlugin } from '@react-pdf-viewer/full-screen';
 import type { GetFilePlugin, GetFilePluginProps } from '@react-pdf-viewer/get-file';
+import { getFilePlugin } from '@react-pdf-viewer/get-file';
 import type { OpenPlugin, OpenPluginProps } from '@react-pdf-viewer/open';
-import type { PageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
+import { openPlugin } from '@react-pdf-viewer/open';
+import type { PageNavigationPlugin, PageNavigationPluginProps } from '@react-pdf-viewer/page-navigation';
+import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
 import type { PrintPlugin, PrintPluginProps } from '@react-pdf-viewer/print';
+import { printPlugin } from '@react-pdf-viewer/print';
 import type { PropertiesPlugin } from '@react-pdf-viewer/properties';
+import { propertiesPlugin } from '@react-pdf-viewer/properties';
 import type { RotatePlugin } from '@react-pdf-viewer/rotate';
+import { rotatePlugin } from '@react-pdf-viewer/rotate';
 import type { ScrollModePlugin } from '@react-pdf-viewer/scroll-mode';
+import { scrollModePlugin } from '@react-pdf-viewer/scroll-mode';
 import type { SearchPlugin, SearchPluginProps } from '@react-pdf-viewer/search';
+import { searchPlugin } from '@react-pdf-viewer/search';
 import type { SelectionModePlugin, SelectionModePluginProps } from '@react-pdf-viewer/selection-mode';
+import { selectionModePlugin } from '@react-pdf-viewer/selection-mode';
 import type { ThemePlugin } from '@react-pdf-viewer/theme';
+import { themePlugin } from '@react-pdf-viewer/theme';
 import type { ZoomPlugin, ZoomPluginProps } from '@react-pdf-viewer/zoom';
-
-import { Toolbar, ToolbarProps } from './Toolbar';
+import { zoomPlugin } from '@react-pdf-viewer/zoom';
+import * as React from 'react';
 import { renderDefaultToolbar } from './renderDefaultToolbar';
+import { Toolbar, ToolbarProps } from './Toolbar';
 import type { ToolbarSlot } from './types/ToolbarSlot';
 import type { TransformToolbarSlot } from './types/TransformToolbarSlot';
 
@@ -72,6 +70,7 @@ export interface ToolbarPluginProps {
     fullScreenPlugin?: FullScreenPluginProps;
     getFilePlugin?: GetFilePluginProps;
     openPlugin?: OpenPluginProps;
+    pageNavigationPlugin?: PageNavigationPluginProps;
     printPlugin?: PrintPluginProps;
     searchPlugin?: SearchPluginProps;
     selectionModePlugin?: SelectionModePluginProps;
@@ -82,7 +81,7 @@ export const toolbarPlugin = (props?: ToolbarPluginProps): ToolbarPlugin => {
     const fullScreenPluginInstance = fullScreenPlugin(props ? props.fullScreenPlugin : {});
     const getFilePluginInstance = getFilePlugin(props ? props.getFilePlugin : {});
     const openPluginInstance = openPlugin(props ? props.openPlugin : {});
-    const pageNavigationPluginInstance = pageNavigationPlugin();
+    const pageNavigationPluginInstance = pageNavigationPlugin(props ? props.pageNavigationPlugin : {});
     const printPluginInstance = printPlugin(props ? props.printPlugin : {});
     const propertiesPluginInstance = propertiesPlugin();
     const rotatePluginInstance = rotatePlugin();
@@ -122,17 +121,17 @@ export const toolbarPlugin = (props?: ToolbarPluginProps): ToolbarPlugin => {
             GoToNextPageMenuItem,
             GoToPreviousPage,
             GoToPreviousPageMenuItem,
+            NumberOfPages,
         } = pageNavigationPluginInstance;
         const { Print, PrintMenuItem } = printPluginInstance;
         const { ShowProperties, ShowPropertiesMenuItem } = propertiesPluginInstance;
         const { Rotate, RotateBackwardMenuItem, RotateForwardMenuItem } = rotatePluginInstance;
-        const { SwitchScrollMode, SwitchScrollModeMenuItem } = scrollModePluginInstance;
+        const { SwitchScrollMode, SwitchScrollModeMenuItem, SwitchViewMode, SwitchViewModeMenuItem } =
+            scrollModePluginInstance;
         const { Search, ShowSearchPopover } = searchPluginInstance;
         const { SwitchSelectionMode, SwitchSelectionModeMenuItem } = selectionModePluginInstance;
         const { SwitchTheme, SwitchThemeMenuItem } = themePluginInstance;
         const { CurrentScale, Zoom, ZoomIn, ZoomInMenuItem, ZoomOut, ZoomOutMenuItem } = zoomPluginInstance;
-
-        const NumberOfPages = () => <CurrentPageLabel>{(props) => <>{props.numberOfPages}</>}</CurrentPageLabel>;
 
         return (
             <Toolbar
@@ -169,6 +168,8 @@ export const toolbarPlugin = (props?: ToolbarPluginProps): ToolbarPlugin => {
                     SwitchScrollModeMenuItem,
                     SwitchSelectionMode,
                     SwitchSelectionModeMenuItem,
+                    SwitchViewMode,
+                    SwitchViewModeMenuItem,
                     SwitchTheme,
                     SwitchThemeMenuItem,
                     Zoom,
@@ -235,6 +236,13 @@ export const toolbarPlugin = (props?: ToolbarPluginProps): ToolbarPlugin => {
             plugins.forEach((plugin) => {
                 if (plugin.onDocumentLoad) {
                     plugin.onDocumentLoad(props);
+                }
+            });
+        },
+        onAnnotationLayerRender: (props: PluginOnAnnotationLayerRender) => {
+            plugins.forEach((plugin) => {
+                if (plugin.onAnnotationLayerRender) {
+                    plugin.onAnnotationLayerRender(props);
                 }
             });
         },

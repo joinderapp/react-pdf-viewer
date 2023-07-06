@@ -3,20 +3,20 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { usePosition } from '../hooks/usePosition';
 import { Position } from '../structs/Position';
-import { Arrow } from './Arrow';
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
-import { classNames } from '../utils/classNames';
 import type { Offset } from '../types/Offset';
+import { classNames } from '../utils/classNames';
+import { Arrow } from './Arrow';
 
 export const TooltipBody: React.FC<{
     ariaControlsSuffix: string;
+    children?: React.ReactNode;
     contentRef: React.RefObject<HTMLDivElement>;
     offset: Offset;
     position: Position;

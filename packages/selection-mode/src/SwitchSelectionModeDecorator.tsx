@@ -3,12 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap } from '@react-pdf-viewer/core';
 import { LocalizationContext } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { HandToolIcon } from './HandToolIcon';
 import { SelectionMode } from './structs/SelectionMode';
 import { TextSelectionIcon } from './TextSelectionIcon';
@@ -31,15 +31,17 @@ export const SwitchSelectionModeDecorator: React.FC<{
 
     switch (mode) {
         case SelectionMode.Hand:
-            label = (l10n && l10n.selectionMode ? l10n.selectionMode.handTool : 'Hand tool') as string;
+            label =
+                l10n && l10n.selectionMode ? ((l10n.selectionMode as LocalizationMap).handTool as string) : 'Hand tool';
             icon = <HandToolIcon />;
             break;
 
         case SelectionMode.Text:
         default:
-            label = (
-                l10n && l10n.selectionMode ? l10n.selectionMode.textSelectionTool : 'Text selection tool'
-            ) as string;
+            label =
+                l10n && l10n.selectionMode
+                    ? ((l10n.selectionMode as LocalizationMap).textSelectionTool as string)
+                    : 'Text selection tool';
             icon = <TextSelectionIcon />;
             break;
     }

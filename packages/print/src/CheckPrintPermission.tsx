@@ -3,15 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap, PdfJs, Store } from '@react-pdf-viewer/core';
 import { Button, LocalizationContext, Modal } from '@react-pdf-viewer/core';
-import type { PdfJs, Store } from '@react-pdf-viewer/core';
-
-import type { StoreProps } from './types/StoreProps';
+import * as React from 'react';
 import { PrintStatus } from './structs/PrintStatus';
+import type { StoreProps } from './types/StoreProps';
 
 const PERMISSION_PRINT = 4;
 const PERMISSION_PRINT_HIGHT_QUALITY = 2048;
@@ -49,10 +48,14 @@ export const CheckPrintPermission: React.FC<{
                 return (
                     <>
                         <div className="rpv-print__permission-body">
-                            {l10n && l10n.print ? l10n.print.disallowPrint : 'The document does not allow to print'}
+                            {l10n && l10n.print
+                                ? ((l10n.print as LocalizationMap).disallowPrint as string)
+                                : 'The document does not allow to print'}
                         </div>
                         <div className="rpv-print__permission-footer">
-                            <Button onClick={close}>{l10n && l10n.print ? l10n.print.close : 'Close'}</Button>
+                            <Button onClick={close}>
+                                {l10n && l10n.print ? ((l10n.print as LocalizationMap).close as string) : 'Close'}
+                            </Button>
                         </div>
                     </>
                 );

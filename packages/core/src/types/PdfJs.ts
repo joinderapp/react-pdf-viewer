@@ -3,8 +3,10 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
+
+import { PageMode } from '../structs/PageMode';
 
 export declare namespace PdfJs {
     // Worker
@@ -16,10 +18,12 @@ export declare namespace PdfJs {
     interface PDFWorkerConstructorParams {
         name: string;
     }
-    class PDFWorker {
+    interface PDFWorker {
         destroyed: boolean;
-        constructor(params: PDFWorkerConstructorParams);
         destroy(): void;
+    }
+    interface PDFWorkerConstructor {
+        new (params: PDFWorkerConstructorParams): PDFWorker;
     }
 
     // Loading task
@@ -29,7 +33,6 @@ export declare namespace PdfJs {
         INCORRECT_PASSWORD: number;
     }
 
-    type VerifyPassword = (password: string) => void;
     type FileData = string | Uint8Array;
 
     interface LoadingTaskProgress {
@@ -39,7 +42,7 @@ export declare namespace PdfJs {
 
     interface LoadingTask {
         docId: string;
-        onPassword: (verifyPassword: VerifyPassword, reason: number) => void;
+        onPassword: (verifyPassword: (password: string) => void, reason: number) => void;
         onProgress: (progress: LoadingTaskProgress) => void;
         promise: Promise<PdfDocument>;
         destroy(): void;
@@ -56,6 +59,7 @@ export declare namespace PdfJs {
         getPage(pageIndex: number): Promise<Page>;
         getPageIndex(ref: OutlineRef): Promise<number>;
         getPageLabels(): Promise<string[] | null>;
+        getPageMode(): Promise<PageMode>;
         getPermissions(): Promise<number[] | null>;
     }
     interface GetDocumentParams {
@@ -97,6 +101,7 @@ export declare namespace PdfJs {
     interface Outline {
         bold?: boolean;
         color?: number[];
+        count?: undefined | number;
         dest?: OutlineDestinationType;
         italic?: boolean;
         items: Outline[];
@@ -155,10 +160,10 @@ export declare namespace PdfJs {
 
     // Render text layer
     interface RenderTextLayerParams {
-        textContent: PageTextContent;
+        textContent?: PageTextContent;
+        textContentSource: PageTextContent;
         container: HTMLDivElement;
         viewport: ViewPort;
-        enhanceTextSelection?: boolean;
     }
     interface PageTextContent {
         items: PageTextItem[];
@@ -180,7 +185,7 @@ export declare namespace PdfJs {
     interface Annotation {
         annotationType: number;
         color?: Uint8ClampedArray;
-        dest: string;
+        dest: OutlineDestinationType;
         hasAppearance: boolean;
         id: string;
         rect: number[];
@@ -196,9 +201,17 @@ export declare namespace PdfJs {
         // For annotation that has a popup
         hasPopup?: boolean;
         contents?: string;
+        contentsObj?: {
+            dir: string;
+            str: string;
+        };
         modificationDate?: string;
         quadPoints?: AnnotationPoint[][];
         title?: string;
+        titleObj?: {
+            dir: string;
+            str: string;
+        };
         // Parent annotation
         parentId?: string;
         parentType?: string;
@@ -211,6 +224,7 @@ export declare namespace PdfJs {
         // Link annotation
         // `action` can be `FirstPage`, `PrevPage`, `NextPage`, `LastPage`, `GoBack`, `GoForward`
         action?: string;
+        unsafeUrl?: string;
         url?: string;
         newWindow?: boolean;
         // Polyline annotation

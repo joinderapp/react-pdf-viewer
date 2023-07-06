@@ -1,10 +1,9 @@
-import * as React from 'react';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-
-import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { Icon, MinimalButton, Position, Tooltip, Viewer } from '@react-pdf-viewer/core';
 import { zoomPlugin } from '@react-pdf-viewer/zoom';
-import { searchPlugin, NextIcon, PreviousIcon, RenderSearchProps } from '../src/index';
+import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
+import * as React from 'react';
+import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
+import { NextIcon, PreviousIcon, RenderSearchProps, searchPlugin } from '../src';
 
 const TestKeepCurrentHighlightAfterZoom: React.FC<{
     fileUrl: Uint8Array;
@@ -131,11 +130,13 @@ const TestKeepCurrentHighlightAfterZoom: React.FC<{
                                     renderSearchProps.numberOfMatches === 0 && (
                                         <div style={{ padding: '0 8px' }}>Not found</div>
                                     )}
-                                {readyToSearch && renderSearchProps.keyword && renderSearchProps.numberOfMatches > 0 && (
-                                    <div data-testid="num-matches" style={{ padding: '0 8px' }}>
-                                        {renderSearchProps.currentMatch} of {renderSearchProps.numberOfMatches}
-                                    </div>
-                                )}
+                                {readyToSearch &&
+                                    renderSearchProps.keyword &&
+                                    renderSearchProps.numberOfMatches > 0 && (
+                                        <div data-testid="num-matches" style={{ padding: '0 8px' }}>
+                                            {renderSearchProps.currentMatch} of {renderSearchProps.numberOfMatches}
+                                        </div>
+                                    )}
                                 <div style={{ padding: '0 2px' }}>
                                     <Tooltip
                                         position={Position.BottomCenter}
@@ -210,6 +211,15 @@ test('Keep the current highlight after zooming the document', async () => {
     // Wait until the document is loaded completely
     await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
 
+    await findByTestId('core__text-layer-0');
+    await findByTestId('core__annotation-layer-0');
+    await findByTestId('core__text-layer-1');
+    await findByTestId('core__annotation-layer-1');
+    await findByTestId('core__text-layer-2');
+    await findByTestId('core__annotation-layer-2');
+    await findByTestId('core__text-layer-3');
+    await findByTestId('core__annotation-layer-3');
+
     const customSearchInput = await findByTestId('custom-search-input');
     fireEvent.change(customSearchInput, { target: { value: 'document' } });
     fireEvent.keyDown(customSearchInput, { key: 'Enter' });
@@ -218,36 +228,40 @@ test('Keep the current highlight after zooming the document', async () => {
     expect(numMatchesLabel.textContent).toEqual('1 of 22');
 
     // There are 3 results found on the second page
-    let textLayer = await findByTestId('core__text-layer-1');
-    const highlights = textLayer.querySelectorAll('.rpv-search__highlight');
+    let searchHighlights = await findByTestId('search__highlights-1');
+    const highlights = searchHighlights.querySelectorAll('.rpv-search__highlight');
     expect(highlights.length).toEqual(3);
 
-    let currentHighlight = textLayer.querySelector('.rpv-search__highlight--current');
-    expect(currentHighlight.getAttribute('data-index')).toEqual('0');
+    let currentHighlight = searchHighlights.querySelector('.rpv-search__highlight--current');
+    expect(currentHighlight?.getAttribute('data-index')).toEqual('0');
 
     // Click the zoom in button
     const zoomInButton = await findByTestId('zoom__in-button');
     fireEvent.click(zoomInButton);
 
     // The current highlight element should be there
-    textLayer = await findByTestId('core__text-layer-1');
-    currentHighlight = textLayer.querySelector('.rpv-search__highlight--current');
-    expect(currentHighlight.getAttribute('data-index')).toEqual('0');
+    await findByTestId('core__text-layer-0');
+    searchHighlights = await findByTestId('search__highlights-1');
+    await findByTestId('core__text-layer-2');
+    currentHighlight = searchHighlights.querySelector('.rpv-search__highlight--current');
+    expect(currentHighlight?.getAttribute('data-index')).toEqual('0');
 
     // Jump to the next match
     const nextMatchButton = await findByTestId('next-match');
     fireEvent.click(nextMatchButton);
     fireEvent.click(nextMatchButton);
 
-    currentHighlight = textLayer.querySelector('.rpv-search__highlight--current');
-    expect(currentHighlight.getAttribute('data-index')).toEqual('2');
+    currentHighlight = searchHighlights.querySelector('.rpv-search__highlight--current');
+    expect(currentHighlight?.getAttribute('data-index')).toEqual('2');
 
     // Click the zoom out button
     const zoomOutButton = await findByTestId('zoom__out-button');
     fireEvent.click(zoomOutButton);
 
     // The current highlight element should be there
-    textLayer = await findByTestId('core__text-layer-1');
-    currentHighlight = textLayer.querySelector('.rpv-search__highlight--current');
-    expect(currentHighlight.getAttribute('data-index')).toEqual('2');
+    await findByTestId('core__text-layer-0');
+    searchHighlights = await findByTestId('search__highlights-1');
+    await findByTestId('core__text-layer-2');
+    currentHighlight = searchHighlights.querySelector('.rpv-search__highlight--current');
+    expect(currentHighlight?.getAttribute('data-index')).toEqual('2');
 });

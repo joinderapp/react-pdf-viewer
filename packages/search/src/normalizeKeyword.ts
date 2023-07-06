@@ -3,7 +3,7 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import { EMPTY_KEYWORD_REGEXP } from './constants';
@@ -20,6 +20,7 @@ export const normalizeFlagKeyword = (flagKeyword: FlagKeyword): NormalizedKeywor
     return {
         keyword: flagKeyword.keyword,
         regExp: new RegExp(escapeRegExp(source), flags),
+        wholeWords: flagKeyword.wholeWords || false,
     };
 };
 
@@ -32,6 +33,7 @@ export const normalizeSingleKeyword = (
         return {
             keyword: keyword.source,
             regExp: keyword,
+            wholeWords: wholeWords || false,
         };
     }
 

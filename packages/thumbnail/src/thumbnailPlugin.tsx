@@ -3,15 +3,15 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { createStore } from '@react-pdf-viewer/core';
 import type { Plugin, PluginFunctions, PluginOnDocumentLoad, ViewerState } from '@react-pdf-viewer/core';
-
+import { createStore, ViewMode } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { Cover } from './Cover';
 import { defaultSpinner, SpinnerContext } from './SpinnerContext';
+import { ThumbnailDirection } from './structs/ThumbnailDirection';
 import { ThumbnailListWithStore } from './ThumbnailListWithStore';
 import type { CoverProps } from './types/CoverProps';
 import type { RenderCurrentPageLabel } from './types/RenderCurrentPageLabelProps';
@@ -20,6 +20,7 @@ import type { StoreProps } from './types/StoreProps';
 
 export interface ThumbnailsProps {
     renderThumbnailItem?: RenderThumbnailItem;
+    thumbnailDirection?: ThumbnailDirection;
 }
 
 export interface ThumbnailPlugin extends Plugin {
@@ -32,10 +33,21 @@ export interface ThumbnailPluginProps {
     // The spinner that replaces the default `Spinner` component
     // For example, it is displayed when loading the cover or thumbnail of a page
     renderSpinner?: () => React.ReactElement;
+    // The width of thumbnails in pixels
+    thumbnailWidth?: number;
 }
 
 export const thumbnailPlugin = (pluginProps?: ThumbnailPluginProps): ThumbnailPlugin => {
-    const store = React.useMemo(() => createStore<StoreProps>({}), []);
+    const store = React.useMemo(
+        () =>
+            createStore<StoreProps>({
+                rotatePage: () => {
+                    /**/
+                },
+                viewMode: ViewMode.SinglePage,
+            }),
+        []
+    );
     const [docId, setDocId] = React.useState('');
 
     const CoverDecorator = (props: CoverProps) => (
@@ -49,6 +61,8 @@ export const thumbnailPlugin = (pluginProps?: ThumbnailPluginProps): ThumbnailPl
                     renderCurrentPageLabel={pluginProps?.renderCurrentPageLabel}
                     renderThumbnailItem={props?.renderThumbnailItem}
                     store={store}
+                    thumbnailDirection={props?.thumbnailDirection || ThumbnailDirection.Vertical}
+                    thumbnailWidth={pluginProps?.thumbnailWidth || 100}
                 />
             </SpinnerContext.Provider>
         ),
@@ -58,6 +72,7 @@ export const thumbnailPlugin = (pluginProps?: ThumbnailPluginProps): ThumbnailPl
     return {
         install: (pluginFunctions: PluginFunctions) => {
             store.update('jumpToPage', pluginFunctions.jumpToPage);
+            store.update('rotatePage', pluginFunctions.rotatePage);
         },
         onDocumentLoad: (props: PluginOnDocumentLoad) => {
             setDocId(props.doc.loadingTask.docId);
@@ -65,8 +80,12 @@ export const thumbnailPlugin = (pluginProps?: ThumbnailPluginProps): ThumbnailPl
         },
         onViewerStateChange: (viewerState: ViewerState) => {
             store.update('currentPage', viewerState.pageIndex);
+            store.update('pagesRotation', viewerState.pagesRotation);
             store.update('pageHeight', viewerState.pageHeight);
             store.update('pageWidth', viewerState.pageWidth);
+            store.update('rotation', viewerState.rotation);
+            store.update('rotatedPage', viewerState.rotatedPage);
+            store.update('viewMode', viewerState.viewMode);
             return viewerState;
         },
         Cover: CoverDecorator,

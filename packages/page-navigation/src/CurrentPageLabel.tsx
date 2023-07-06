@@ -3,18 +3,16 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-
 import type { Store } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { FetchLabels } from './FetchLabels';
+import type { StoreProps } from './types/StoreProps';
 import { useCurrentPage } from './useCurrentPage';
 import { useDocument } from './useDocument';
 import { useNumberOfPages } from './useNumberOfPages';
-import type { StoreProps } from './types/StoreProps';
 
 export interface RenderCurrentPageLabelProps {
     currentPage: number;

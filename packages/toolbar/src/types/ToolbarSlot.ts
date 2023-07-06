@@ -3,21 +3,30 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { EnterFullScreenMenuItemProps, EnterFullScreenProps } from '@react-pdf-viewer/full-screen';
 import type { DownloadMenuItemProps, DownloadProps } from '@react-pdf-viewer/get-file';
 import type { OpenProps } from '@react-pdf-viewer/open';
-import type { CurrentPageLabelProps, GoToPageMenuItemProps, GoToPageProps } from '@react-pdf-viewer/page-navigation';
+import type {
+    CurrentPageLabelProps,
+    GoToPageMenuItemProps,
+    GoToPageProps,
+    NumberOfPagesProps,
+} from '@react-pdf-viewer/page-navigation';
 import type { PrintMenuItemProps, PrintProps } from '@react-pdf-viewer/print';
-import type { ShowPropertiesProps, ShowPropertiesMenuItemProps } from '@react-pdf-viewer/properties';
+import type { ShowPropertiesMenuItemProps, ShowPropertiesProps } from '@react-pdf-viewer/properties';
 import type { RotateDecoratorProps, RotateProps } from '@react-pdf-viewer/rotate';
-import type { SwitchScrollModeMenuItemProps, SwitchScrollModeProps } from '@react-pdf-viewer/scroll-mode';
+import type {
+    SwitchScrollModeMenuItemProps,
+    SwitchScrollModeProps,
+    SwitchViewModeMenuItemProps,
+    SwitchViewModeProps,
+} from '@react-pdf-viewer/scroll-mode';
 import type { SearchProps, ShowSearchPopoverProps } from '@react-pdf-viewer/search';
 import type { SwitchSelectionModeMenuItemProps, SwitchSelectionModeProps } from '@react-pdf-viewer/selection-mode';
-import type { SwitchThemeProps, SwitchThemeMenuItemProps } from '@react-pdf-viewer/theme';
+import type { SwitchThemeMenuItemProps, SwitchThemeProps } from '@react-pdf-viewer/theme';
 import type {
     CurrentScaleProps,
     ZoomInProps,
@@ -25,6 +34,7 @@ import type {
     ZoomOutProps,
     ZoomProps,
 } from '@react-pdf-viewer/zoom';
+import * as React from 'react';
 
 export interface ToolbarSlot {
     CurrentPageInput(): React.ReactElement;
@@ -38,7 +48,7 @@ export interface ToolbarSlot {
     GoToNextPageMenuItem(props: GoToPageMenuItemProps): React.ReactElement;
     GoToPreviousPage(props: GoToPageProps): React.ReactElement;
     GoToPreviousPageMenuItem(props: GoToPageMenuItemProps): React.ReactElement;
-    NumberOfPages(): React.ReactElement;
+    NumberOfPages(props: NumberOfPagesProps): React.ReactElement;
 
     Download(props: DownloadProps): React.ReactElement;
     DownloadMenuItem(props: DownloadMenuItemProps): React.ReactElement;
@@ -64,8 +74,12 @@ export interface ToolbarSlot {
 
     SwitchScrollMode(props: SwitchScrollModeProps): React.ReactElement;
     SwitchScrollModeMenuItem(props: SwitchScrollModeMenuItemProps): React.ReactElement;
+
     SwitchSelectionMode(props: SwitchSelectionModeProps): React.ReactElement;
     SwitchSelectionModeMenuItem(props: SwitchSelectionModeMenuItemProps): React.ReactElement;
+
+    SwitchViewMode(props: SwitchViewModeProps): React.ReactElement;
+    SwitchViewModeMenuItem(props: SwitchViewModeMenuItemProps): React.ReactElement;
 
     SwitchTheme(props: SwitchThemeProps): React.ReactElement;
     SwitchThemeMenuItem(props: SwitchThemeMenuItemProps): React.ReactElement;

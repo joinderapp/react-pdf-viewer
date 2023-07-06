@@ -3,26 +3,23 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import { SpecialZoomLevel } from '../structs/SpecialZoomLevel';
+import type { Destination } from '../types/Destination';
 import type { PdfJs } from '../types/PdfJs';
 
-export interface JumpToDestination {
-    bottomOffset: number;
-    leftOffset: number;
-    pageIndex: number;
-    scaleTo: number | SpecialZoomLevel;
-}
-
-const normalizeDestination = (pageIndex: number, destArray: PdfJs.OutlineDestination): JumpToDestination => {
+const normalizeDestination = (pageIndex: number, destArray: PdfJs.OutlineDestination): Destination => {
     switch (destArray[1].name) {
         case 'XYZ':
+            // The `bottom` and `left` offsets are defined by `destArray[3]` and `destArray[2]`, respectively.
+            // If they aren't provided, then they can be determined from the height of width of viewport
             return {
-                bottomOffset: destArray[3],
-                leftOffset: destArray[2] || 0,
-                pageIndex: pageIndex,
+                bottomOffset: (_: number, viewportHeight: number) =>
+                    destArray[3] === null ? viewportHeight : destArray[3],
+                leftOffset: (_: number, __: number) => (destArray[2] === null ? 0 : destArray[2]),
+                pageIndex,
                 scaleTo: destArray[4],
             };
         case 'Fit':
@@ -30,7 +27,7 @@ const normalizeDestination = (pageIndex: number, destArray: PdfJs.OutlineDestina
             return {
                 bottomOffset: 0,
                 leftOffset: 0,
-                pageIndex: pageIndex,
+                pageIndex,
                 scaleTo: SpecialZoomLevel.PageFit,
             };
         case 'FitH':
@@ -38,14 +35,14 @@ const normalizeDestination = (pageIndex: number, destArray: PdfJs.OutlineDestina
             return {
                 bottomOffset: destArray[2],
                 leftOffset: 0,
-                pageIndex: pageIndex,
+                pageIndex,
                 scaleTo: SpecialZoomLevel.PageWidth,
             };
         default:
             return {
                 bottomOffset: 0,
                 leftOffset: 0,
-                pageIndex: pageIndex,
+                pageIndex,
                 scaleTo: 1,
             };
     }
@@ -61,8 +58,10 @@ const pagesMap = new Map<string, PdfJs.Page>();
 const generateRefKey = (doc: PdfJs.PdfDocument, outline: PdfJs.OutlineRef): string =>
     `${doc.loadingTask.docId}___${outline.num}R${outline.gen === 0 ? '' : outline.gen}`;
 
-const getPageIndex = (doc: PdfJs.PdfDocument, outline: PdfJs.OutlineRef): number | null =>
-    pageOutlinesMap.get(generateRefKey(doc, outline)) || null;
+const getPageIndex = (doc: PdfJs.PdfDocument, outline: PdfJs.OutlineRef): number | null => {
+    const key = generateRefKey(doc, outline);
+    return pageOutlinesMap.has(key) ? pageOutlinesMap.get(key) : null;
+};
 
 const cacheOutlineRef = (doc: PdfJs.PdfDocument, outline: PdfJs.OutlineRef, pageIndex: number) => {
     pageOutlinesMap.set(generateRefKey(doc, outline), pageIndex);
@@ -95,11 +94,8 @@ export const getPage = (doc: PdfJs.PdfDocument, pageIndex: number): Promise<PdfJ
     });
 };
 
-export const getDestination = (
-    doc: PdfJs.PdfDocument,
-    dest: PdfJs.OutlineDestinationType
-): Promise<JumpToDestination> => {
-    return new Promise<JumpToDestination>((res) => {
+export const getDestination = (doc: PdfJs.PdfDocument, dest: PdfJs.OutlineDestinationType): Promise<Destination> => {
+    return new Promise<Destination>((res) => {
         new Promise<PdfJs.OutlineDestination>((resolve) => {
             if (typeof dest === 'string') {
                 doc.getDestination(dest).then((destArray) => {

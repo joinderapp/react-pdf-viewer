@@ -3,7 +3,7 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
@@ -17,10 +17,28 @@ export interface OpenFile {
     data: PdfJs.FileData;
     name: string;
 }
+export interface Rect {
+    height: number;
+    width: number;
+}
+export interface PageLayout {
+    buildPageStyles?: ({
+        numPages,
+        pageIndex,
+        scrollMode,
+        viewMode,
+    }: {
+        numPages: number;
+        pageIndex: number;
+        scrollMode: ScrollMode;
+        viewMode: ViewMode;
+    }) => React.CSSProperties;
+    transformSize?: ({ numPages, pageIndex, size }: { numPages: number; pageIndex: number; size: Rect }) => Rect;
+}
 export interface PageSize {
     pageHeight: number;
     pageWidth: number;
-    scale: number;
+    rotation: number;
 }
 export interface Plugin {
     install?(pluginFunctions: PluginFunctions): void;
@@ -35,20 +53,32 @@ export interface Plugin {
 }
 
 export type DestinationOffsetFromViewport = (viewportWidth: number, viewportHeight: number) => number;
+
+export interface Destination {
+    bottomOffset: number | DestinationOffsetFromViewport;
+    label?: string;
+    leftOffset: number | DestinationOffsetFromViewport;
+    pageIndex: number;
+    scaleTo?: number | SpecialZoomLevel;
+}
+
 export interface PluginFunctions {
+    enterFullScreenMode(target: HTMLElement): void;
+    exitFullScreenMode(): void;
     getPagesContainer(): HTMLElement;
     getViewerState(): ViewerState;
-    jumpToDestination(
-        pageIndex: number,
-        bottomOffset: number | DestinationOffsetFromViewport,
-        leftOffset: number | DestinationOffsetFromViewport,
-        scaleTo?: number | SpecialZoomLevel
-    ): void;
-    jumpToPage(pageIndex: number): void;
+    jumpToDestination(destination: Destination): Promise<void>;
+    jumpToNextDestination(): Promise<void>;
+    jumpToPreviousDestination(): Promise<void>;
+    jumpToNextPage(): Promise<void>;
+    jumpToPreviousPage(): Promise<void>;
+    jumpToPage(pageIndex: number): Promise<void>;
     openFile(file: File): void;
-    rotate(rotation: number): void;
+    rotate(direction: RotateDirection): void;
+    rotatePage(pageIndex: number, direction: RotateDirection): void;
     setViewerState(viewerState: ViewerState): void;
     switchScrollMode(scrollMode: ScrollMode): void;
+    switchViewMode(viewMode: ViewMode): void;
     zoom(scale: number | SpecialZoomLevel): void;
 }
 export interface PluginOnDocumentLoad {
@@ -77,11 +107,17 @@ export interface PluginOnCanvasLayerRender {
     status: LayerRenderStatus;
 }
 export interface PluginRenderPageLayer {
+    canvasLayerRef: React.MutableRefObject<HTMLCanvasElement>;
+    // Is the canvas layer rendered completely?
+    canvasLayerRendered: boolean;
     doc: PdfJs.PdfDocument;
     height: number;
     pageIndex: number;
     rotation: number;
     scale: number;
+    textLayerRef: React.MutableRefObject<HTMLDivElement>;
+    // Is the text layer rendered completely?
+    textLayerRendered: boolean;
     width: number;
 }
 export interface RenderPageProps {
@@ -101,13 +137,16 @@ export interface RenderPageProps {
     width: number;
     // Mark as the page rendered completely
     markRendered(pageIndex: number): void;
+    onRotatePage(direction: RotateDirection): void;
 }
 export type RenderPage = (props: RenderPageProps) => React.ReactElement;
 export interface RenderViewer {
     containerRef: React.RefObject<HTMLDivElement>;
     doc: PdfJs.PdfDocument;
-    pageHeight: number;
-    pageWidth: number;
+    pagesContainerRef: React.RefObject<HTMLDivElement>;
+    // The rotation for each page
+    pagesRotation: Map<number, number>;
+    pageSizes: PageSize[];
     rotation: number;
     slot: Slot;
     themeContext: ThemeContextProps;
@@ -115,7 +154,10 @@ export interface RenderViewer {
     // Jump to given page
     // `page` is zero-index based
     jumpToPage(page: number): void;
-    rotate(degree: number): void;
+    rotate(direction: RotateDirection): void;
+    rotatePage(pageIndex: number, direction: RotateDirection): void;
+    switchScrollMode(scrollMode: ScrollMode): void;
+    switchViewMode(viewMode: ViewMode): void;
     zoom(level: number | SpecialZoomLevel): void;
 }
 export interface Slot {
@@ -132,16 +174,23 @@ export interface ViewerState {
     // The current opened file. It can be changed from outside, such as user drags and drops an external file
     // or user opens a file from toolbar
     file: OpenFile;
+    fullScreenMode: FullScreenMode;
     // The current page index
     pageIndex: number;
     // Size of page
     pageHeight: number;
     pageWidth: number;
+    // The rotation for each page
+    pagesRotation: Map<number, number>;
+    // The last page which is rotated
+    rotatedPage?: number;
     rotation: number;
     // The current zoom level
     scale: number;
     // The current scroll mode
     scrollMode: ScrollMode;
+    // The current view mode
+    viewMode: ViewMode;
 }
 export interface VisibilityChanged {
     isVisible: boolean;
@@ -169,9 +218,27 @@ export enum AnnotationType {
     FileAttachment = 17,
 }
 
+export enum FullScreenMode {
+    Normal = 'Normal',
+    // Start entering the full screen mode
+    Entering = 'Entering',
+    Entered = 'Entered',
+    Exitting = 'Exitting',
+    Exited = 'Exited',
+}
+
 export enum LayerRenderStatus {
     PreRender,
     DidRender,
+}
+
+export enum PageMode {
+    Attachments = 'UseAttachments',
+    Bookmarks = 'UseOutlines',
+    ContentGroup = 'UseOC',
+    Default = 'UserNone',
+    FullScreen = 'FullScreen',
+    Thumbnails = 'UseThumbs',
 }
 
 export enum Position {
@@ -189,7 +256,13 @@ export enum Position {
     LeftBottom = 'LEFT_BOTTOM',
 }
 
+export enum RotateDirection {
+    Backward = 'Backward',
+    Forward = 'Forward',
+}
+
 export enum ScrollMode {
+    Page = 'Page',
     Horizontal = 'Horizontal',
     Vertical = 'Vertical',
     Wrapped = 'Wrapped',
@@ -199,6 +272,12 @@ export enum SpecialZoomLevel {
     ActualSize = 'ActualSize',
     PageFit = 'PageFit',
     PageWidth = 'PageWidth',
+}
+
+export enum ViewMode {
+    DualPage = 'DualPage',
+    DualPageWithCover = 'DualPageWithCover',
+    SinglePage = 'SinglePage',
 }
 
 export enum ToggleStatus {
@@ -212,6 +291,7 @@ export type RenderContent = (toggle: Toggle) => React.ReactNode;
 export type RenderTarget = (toggle: Toggle, opened: boolean) => React.ReactNode;
 
 export interface ButtonProps {
+    children?: React.ReactNode;
     testId?: string;
     onClick(): void;
 }
@@ -219,16 +299,20 @@ export class Button extends React.Component<ButtonProps> {}
 
 export interface LazyRenderProps {
     attrs?: React.HTMLAttributes<HTMLDivElement>;
+    children?: React.ReactNode;
     testId?: string;
 }
 export class LazyRender extends React.Component<LazyRenderProps> {}
 
-export class Menu extends React.Component {}
+export class Menu extends React.Component<{
+    children?: React.ReactNode;
+}> {}
 
 export class MenuDivider extends React.Component {}
 
 export interface MenuItemProps {
     checked?: boolean;
+    children?: React.ReactNode;
     icon?: React.ReactElement;
     isDisabled?: boolean;
     testId?: string;
@@ -239,6 +323,7 @@ export class MenuItem extends React.Component<MenuItemProps> {}
 export interface MinimalButtonProps {
     ariaLabel?: string;
     ariaKeyShortcuts?: string;
+    children?: React.ReactNode;
     isDisabled?: boolean;
     isSelected?: boolean;
     testId?: string;
@@ -247,6 +332,7 @@ export interface MinimalButtonProps {
 export class MinimalButton extends React.Component<MinimalButtonProps> {}
 
 export interface PrimaryButtonProps {
+    children?: React.ReactNode;
     testId?: string;
     onClick(): void;
 }
@@ -289,6 +375,7 @@ export interface TextBoxProps {
 export class TextBox extends React.Component<TextBoxProps> {}
 
 export interface IconProps {
+    children?: React.ReactNode;
     // If this option is `true`, the icon will not be flipped
     ignoreDirection?: boolean;
     size?: number;
@@ -311,6 +398,7 @@ export interface PopoverProps {
     closeOnClickOutside: boolean;
     closeOnEscape: boolean;
     content: RenderContent;
+    lockScroll?: boolean;
     offset: Offset;
     position: Position;
     target?: RenderTarget;
@@ -337,6 +425,7 @@ export interface Store<T extends StoreState> {
     subscribe<K extends StoreKey<T>>(eventName: K, handler: StoreHandler<NonNullable<T[K]>>): void;
     unsubscribe<K extends StoreKey<T>>(eventName: K, handler: StoreHandler<NonNullable<T[K]>>): void;
     update<K extends StoreKey<T>>(eventName: K, params: T[K]): void;
+    updateCurrentValue<K extends StoreKey<T>>(eventName: K, updater: (currentValue: T[K]) => T[K]): void;
     get<K extends StoreKey<T>>(eventName: K): T[K] | undefined;
 }
 
@@ -344,13 +433,34 @@ export function createStore<T extends StoreState>(initialState?: T): Store<T>;
 
 // Contexts
 export interface LocalizationMap {
-    [key: string]: LocalizationMap;
+    [key: string]: string | LocalizationMap;
 }
 export interface LocalizationContextProps {
     l10n: LocalizationMap;
     setL10n(l10n: LocalizationMap): void;
 }
 export const LocalizationContext: React.Context<LocalizationContextProps>;
+
+export interface PdfJsApiProvider {
+    getDocument(params: PdfJs.GetDocumentParams): PdfJs.LoadingTask;
+
+    // Worker
+    PDFWorker: PdfJs.PDFWorkerConstructor;
+    GlobalWorkerOptions: PdfJs.GlobalWorker;
+
+    // Loading task
+    PasswordResponses: PdfJs.PasswordResponsesValue;
+
+    // Render SVG
+    SVGGraphics: PdfJs.SVGGraphicsConstructor;
+
+    // Render text layer
+    renderTextLayer(params: PdfJs.RenderTextLayerParams): PdfJs.PageRenderTask;
+}
+export interface PdfJsApiContextProps {
+    pdfJsApiProvider?: PdfJsApiProvider;
+}
+export const PdfJsApiContext: React.Context<PdfJsApiContextProps>;
 
 export enum TextDirection {
     RightToLeft = 'RTL',
@@ -387,10 +497,20 @@ export interface LoadError {
 export type RenderError = (error: LoadError) => React.ReactElement;
 
 // Invoked when the document asks for password
-export type VerifyPassword = (password: string) => void;
 export interface DocumentAskPasswordEvent {
-    verifyPassword: VerifyPassword;
+    verifyPassword: (password: string) => void;
 }
+
+// Customize the view of protected document
+export enum PasswordStatus {
+    RequiredPassword = 'RequiredPassword',
+    WrongPassword = 'WrongPassword',
+}
+export interface RenderProtectedViewProps {
+    passwordStatus: PasswordStatus;
+    verifyPassword: (password: string) => void;
+}
+export type RenderProtectedView = (renderProps: RenderProtectedViewProps) => React.ReactElement;
 
 // Invoked when the document is loaded successfully
 export interface DocumentLoadEvent {
@@ -411,10 +531,33 @@ export interface ZoomEvent {
     scale: number;
 }
 
+// Invoked when users rotate the document
+export interface RotateEvent {
+    direction: RotateDirection;
+    doc: PdfJs.PdfDocument;
+    rotation: number;
+}
+
+// Invoked when users rotate a page of the document
+export interface RotatePageEvent {
+    direction: RotateDirection;
+    doc: PdfJs.PdfDocument;
+    pageIndex: number;
+    rotation: number;
+}
+
 export interface ThemeProps {
     direction?: TextDirection;
     theme?: string;
 }
+
+export interface VisiblePagesRange {
+    endPage: number;
+    numPages: number;
+    startPage: number;
+}
+
+export type SetRenderRange = (visiblePagesRange: VisiblePagesRange) => { endPage: number; startPage: number };
 
 export interface ViewerProps {
     characterMap?: CharacterMap;
@@ -422,59 +565,46 @@ export interface ViewerProps {
     // If it's not set, the initial zoom level will be calculated based on the dimesion of page and the container width
     // So that, the document will fit best within the container
     defaultScale?: number | SpecialZoomLevel;
+    // Enable smooth scroll
+    enableSmoothScroll?: boolean;
     fileUrl: string | Uint8Array;
     // Additional authentication headers
     httpHeaders?: Record<string, string | string[]>;
     // The page (zero-index based) that will be displayed initially
     initialPage?: number;
+    // The initial rotation, must be divisible by 90
+    initialRotation?: number;
+    pageLayout?: PageLayout;
     // Plugins
     plugins?: Plugin[];
     localization?: LocalizationMap;
     renderError?: RenderError;
-    renderPage?: RenderPage;
     renderLoader?(percentages: number): React.ReactElement;
+    renderPage?: RenderPage;
+    renderProtectedView?: RenderProtectedView;
     scrollMode?: ScrollMode;
+    setRenderRange?: SetRenderRange;
     // Theme
     theme?: string | ThemeProps;
     transformGetDocumentParams?(options: PdfJs.GetDocumentParams): PdfJs.GetDocumentParams;
+    viewMode?: ViewMode;
     // Indicate the cross-site requests should be made with credentials such as cookie and authorization headers.
     // The default value is `false`
     withCredentials?: boolean;
     onDocumentAskPassword?(e: DocumentAskPasswordEvent): void;
     onDocumentLoad?(e: DocumentLoadEvent): void;
     onPageChange?(e: PageChangeEvent): void;
+    onRotate?(e: RotateEvent): void;
+    onRotatePage?(e: RotatePageEvent): void;
     // Invoked after switching to `theme`
     onSwitchTheme?(theme: string): void;
     onZoom?(e: ZoomEvent): void;
 }
 export class Viewer extends React.Component<ViewerProps> {}
 
-export interface WorkerProps {
-    workerUrl: string;
-}
-export class Worker extends React.Component<WorkerProps> {}
-
-// Services
-export function renderQueueService({
-    doc,
-    queueName,
-    priority,
-}: {
-    doc: PdfJs.PdfDocument;
-    queueName: string;
-    priority: number;
-}): {
-    OUT_OF_RANGE_VISIBILITY: number;
-    cleanup: () => void;
-    getHighestPriorityPage: () => number;
-    markRendered: (pageIndex: number) => void;
-    markRendering: (pageIndex: number) => void;
-    resetQueue: () => void;
-    setRange: (startIndex: number, endIndex: number) => void;
-    setVisibility: (pageIndex: number, visibility: number) => void;
-};
-
 // Hooks
+export function useDebounceCallback<T extends unknown[]>(callback: (...args: T) => void, wait: number): void;
+
 export interface UseIntersectionObserverProps {
     once?: boolean;
     threshold?: number | number[];
@@ -486,7 +616,24 @@ export function useIsomorphicLayoutEffect(effect: React.EffectCallback, deps?: R
 
 export function useIsMounted(): React.MutableRefObject<boolean>;
 
+export function usePrevious<T>(value: T): T;
+
+export interface UseRenderQueue {
+    getHighestPriorityPage: () => number;
+    isInRange: (pageIndex: number) => boolean;
+    markNotRendered: () => void;
+    markRendered: (pageIndex: number) => void;
+    markRendering: (pageIndex: number) => void;
+    setOutOfRange: (pageIndex: number) => void;
+    setRange: (startIndex: number, endIndex: number) => void;
+    setVisibility: (pageIndex: number, visibility: number) => void;
+}
+
+export function useRenderQueue({ doc }: { doc: PdfJs.PdfDocument }): UseRenderQueue;
+
 // Utils
+export function chunk<T>(arr: T[], size: number): T[][];
+
 export function classNames(classes: { [clazz: string]: boolean }): string;
 
 export function getPage(doc: PdfJs.PdfDocument, pageIndex: number): Promise<PdfJs.Page>;
@@ -499,26 +646,53 @@ export interface JumpToDestination {
 }
 export function getDestination(doc: PdfJs.PdfDocument, dest: PdfJs.OutlineDestinationType): Promise<JumpToDestination>;
 
+export function isFullScreenEnabled(): boolean;
+
 export function isMac(): boolean;
 
 // Vendors
 // pdfjs namespace
 export declare namespace PdfJs {
-    type FileData = string | Uint8Array;
-
     // Worker
+    const GlobalWorkerOptions: GlobalWorker;
+    interface GlobalWorker {
+        workerSrc: string;
+    }
+
     interface PDFWorkerConstructorParams {
         name: string;
     }
-
-    class PDFWorker {
+    interface PDFWorker {
         destroyed: boolean;
-        constructor(params: PDFWorkerConstructorParams);
         destroy(): void;
     }
+    interface PDFWorkerConstructor {
+        new (params: PDFWorkerConstructorParams): PDFWorker;
+    }
 
-    // Document
+    // Loading task
+    const PasswordResponses: PasswordResponsesValue;
+    interface PasswordResponsesValue {
+        NEED_PASSWORD: number;
+        INCORRECT_PASSWORD: number;
+    }
+
+    type FileData = string | Uint8Array;
+
+    interface LoadingTaskProgress {
+        loaded: number;
+        total: number;
+    }
+
+    interface LoadingTask {
+        docId: string;
+        onPassword: (verifyPassword: (password: string) => void, reason: number) => void;
+        onProgress: (progress: LoadingTaskProgress) => void;
+        promise: Promise<PdfDocument>;
+        destroy(): void;
+    }
     interface PdfDocument {
+        loadingTask: LoadingTask;
         numPages: number;
         getAttachments(): Promise<{ [filename: string]: Attachment }>;
         getData(): Promise<Uint8Array>;
@@ -529,6 +703,8 @@ export declare namespace PdfJs {
         getPage(pageIndex: number): Promise<Page>;
         getPageIndex(ref: OutlineRef): Promise<number>;
         getPageLabels(): Promise<string[] | null>;
+        getPageMode(): Promise<PageMode>;
+        getPermissions(): Promise<number[] | null>;
     }
     interface GetDocumentParams {
         data?: FileData;
@@ -539,51 +715,7 @@ export declare namespace PdfJs {
         withCredentials?: boolean;
         worker?: PDFWorker;
     }
-
-    // Viewport
-    interface ViewPortParams {
-        rotation?: number;
-        scale: number;
-    }
-    interface ViewPortCloneParams {
-        dontFlip: boolean;
-    }
-    interface ViewPort {
-        height: number;
-        rotation: number;
-        transform: number[];
-        width: number;
-        clone(params: ViewPortCloneParams): ViewPort;
-        convertToViewportPoint(x: number, y: number): [number, number];
-    }
-
-    interface PageTextContent {
-        items: PageTextItem[];
-    }
-    interface PageTextItem {
-        str: string;
-    }
-
-    // Render task
-    interface PageRenderTask {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        promise: Promise<any>;
-        cancel(): void;
-    }
-
-    // Render page
-    interface PageRenderParams {
-        canvasContext: CanvasRenderingContext2D;
-        // Should be 'print' when printing
-        intent?: string;
-        transform?: number[];
-        viewport: ViewPort;
-    }
-    interface Page {
-        getTextContent(): Promise<PageTextContent>;
-        getViewport(params: ViewPortParams): ViewPort;
-        render(params: PageRenderParams): PageRenderTask;
-    }
+    function getDocument(params: GetDocumentParams): LoadingTask;
 
     // Attachment
     interface Attachment {
@@ -613,6 +745,7 @@ export declare namespace PdfJs {
     interface Outline {
         bold?: boolean;
         color?: number[];
+        count?: undefined | number;
         dest?: OutlineDestinationType;
         italic?: boolean;
         items: Outline[];
@@ -636,6 +769,59 @@ export declare namespace PdfJs {
         num: number;
     }
 
+    // View port
+    interface ViewPortParams {
+        rotation?: number;
+        scale: number;
+    }
+    interface ViewPortCloneParams {
+        dontFlip: boolean;
+    }
+    interface ViewPort {
+        height: number;
+        rotation: number;
+        transform: number[];
+        width: number;
+        clone(params: ViewPortCloneParams): ViewPort;
+        convertToViewportPoint(x: number, y: number): [number, number];
+    }
+
+    // Render task
+    interface PageRenderTask {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        promise: Promise<any>;
+        cancel(): void;
+    }
+
+    // Render SVG
+    interface SVGGraphics {
+        getSVG(operatorList: PageOperatorList, viewport: ViewPort): Promise<SVGElement>;
+    }
+    interface SVGGraphicsConstructor {
+        new (commonObjs: PageCommonObjects, objs: PageObjects): SVGGraphics;
+    }
+    let SVGGraphics: SVGGraphicsConstructor;
+
+    // Render text layer
+    interface RenderTextLayerParams {
+        textContent?: PageTextContent;
+        textContentSource: PageTextContent;
+        container: HTMLDivElement;
+        viewport: ViewPort;
+    }
+    interface PageTextContent {
+        items: PageTextItem[];
+    }
+    interface PageTextItem {
+        str: string;
+    }
+    function renderTextLayer(params: RenderTextLayerParams): PageRenderTask;
+
+    // Annotations layer
+    interface AnnotationsParams {
+        // Can be 'display' or 'print'
+        intent: string;
+    }
     interface AnnotationPoint {
         x: number;
         y: number;
@@ -643,7 +829,7 @@ export declare namespace PdfJs {
     interface Annotation {
         annotationType: number;
         color?: Uint8ClampedArray;
-        dest: string;
+        dest: OutlineDestinationType;
         hasAppearance: boolean;
         id: string;
         rect: number[];
@@ -659,9 +845,17 @@ export declare namespace PdfJs {
         // For annotation that has a popup
         hasPopup?: boolean;
         contents?: string;
+        contentsObj?: {
+            dir: string;
+            str: string;
+        };
         modificationDate?: string;
         quadPoints?: AnnotationPoint[][];
         title?: string;
+        titleObj?: {
+            dir: string;
+            str: string;
+        };
         // Parent annotation
         parentId?: string;
         parentType?: string;
@@ -674,6 +868,7 @@ export declare namespace PdfJs {
         // Link annotation
         // `action` can be `FirstPage`, `PrevPage`, `NextPage`, `LastPage`, `GoBack`, `GoForward`
         action?: string;
+        unsafeUrl?: string;
         url?: string;
         newWindow?: boolean;
         // Polyline annotation
@@ -681,4 +876,49 @@ export declare namespace PdfJs {
         // Text annotation
         name?: string;
     }
+    const AnnotationLayer: PdfAnnotationLayer;
+    interface RenderAnnotationLayerParams {
+        annotations: Annotation[];
+        div: HTMLDivElement | null;
+        linkService: LinkService;
+        page: Page;
+        viewport: ViewPort;
+    }
+    interface PdfAnnotationLayer {
+        render(params: RenderAnnotationLayerParams): void;
+        update(params: RenderAnnotationLayerParams): void;
+    }
+
+    // Link service
+    interface LinkService {
+        externalLinkTarget?: number | null;
+        getDestinationHash(dest: OutlineDestinationType): string;
+        navigateTo(dest: OutlineDestinationType): void;
+    }
+
+    // Render page
+    interface PageRenderParams {
+        canvasContext: CanvasRenderingContext2D;
+        // Should be 'print' when printing
+        intent?: string;
+        transform?: number[];
+        viewport: ViewPort;
+    }
+    interface Page {
+        getAnnotations(params: AnnotationsParams): Promise<Annotation[]>;
+        getTextContent(): Promise<PageTextContent>;
+        getViewport(params: ViewPortParams): ViewPort;
+        render(params: PageRenderParams): PageRenderTask;
+        getOperatorList(): Promise<PageOperatorList>;
+        commonObjs: PageCommonObjects;
+        objs: PageObjects;
+        ref?: OutlineRef;
+        view: number[];
+    }
+
+    /* eslint-disable @typescript-eslint/no-empty-interface */
+    interface PageCommonObjects {}
+    interface PageObjects {}
+    interface PageOperatorList {}
+    /* eslint-enable @typescript-eslint/no-empty-interface */
 }

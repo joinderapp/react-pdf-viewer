@@ -3,10 +3,10 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
+import type { LocalizationMap, SplitterSize, Store } from '@react-pdf-viewer/core';
 import {
     classNames,
     LocalizationContext,
@@ -17,8 +17,7 @@ import {
     ThemeContext,
     Tooltip,
 } from '@react-pdf-viewer/core';
-import type { SplitterSize, Store } from '@react-pdf-viewer/core';
-
+import * as React from 'react';
 import { BookmarkIcon } from './BookmarkIcon';
 import { FileIcon } from './FileIcon';
 import { ThumbnailIcon } from './ThumbnailIcon';
@@ -50,8 +49,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
     const containerRef = React.useRef<HTMLDivElement>();
     const { l10n } = React.useContext(LocalizationContext);
-    const [opened, setOpened] = React.useState(false);
-    const [currentTab, setCurrentTab] = React.useState(store.get('currentTab') || 0);
+    const [opened, setOpened] = React.useState(store.get('isCurrentTabOpened') || false);
+    const [currentTab, setCurrentTab] = React.useState(Math.max(store.get('currentTab') || 0, 0));
     const { direction } = React.useContext(ThemeContext);
     const isRtl = direction === TextDirection.RightToLeft;
 
@@ -61,17 +60,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
             content: thumbnailTabContent,
             icon: <ThumbnailIcon />,
-            title: (l10n && l10n.defaultLayout ? l10n.defaultLayout.thumbnail : 'Thumbnail') as string,
+            title:
+                l10n && l10n.defaultLayout
+                    ? ((l10n.defaultLayout as LocalizationMap).thumbnail as string)
+                    : 'Thumbnail',
         },
         {
             content: bookmarkTabContent,
             icon: <BookmarkIcon />,
-            title: (l10n && l10n.defaultLayout ? l10n.defaultLayout.bookmark : 'Bookmark') as string,
+            title:
+                l10n && l10n.defaultLayout ? ((l10n.defaultLayout as LocalizationMap).bookmark as string) : 'Bookmark',
         },
         {
             content: attachmentTabContent,
             icon: <FileIcon />,
-            title: (l10n && l10n.defaultLayout ? l10n.defaultLayout.attachment : 'Attachment') as string,
+            title:
+                l10n && l10n.defaultLayout
+                    ? ((l10n.defaultLayout as LocalizationMap).attachment as string)
+                    : 'Attachment',
         },
     ];
 
@@ -79,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     const toggleTab = (index: number) => {
         if (currentTab === index) {
-            setOpened((isOpened) => !isOpened);
+            store.update('isCurrentTabOpened', !store.get('isCurrentTabOpened'));
             // Remove the `width` style in the case the sidebar is resized
             const container = containerRef.current;
             if (container) {
@@ -89,20 +95,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }
             }
         } else {
-            switchToTab(index);
+            store.update('currentTab', index);
         }
     };
 
     const switchToTab = (index: number) => {
-        setOpened(true);
-        setCurrentTab(index);
+        if (index >= 0 && index <= listTabs.length - 1) {
+            store.update('isCurrentTabOpened', true);
+            setCurrentTab(index);
+        }
+    };
+
+    const handleCurrentTabOpened = (opened: boolean) => {
+        setOpened(opened);
     };
 
     React.useEffect(() => {
         store.subscribe('currentTab', switchToTab);
+        store.subscribe('isCurrentTabOpened', handleCurrentTabOpened);
 
         return (): void => {
             store.unsubscribe('currentTab', switchToTab);
+            store.unsubscribe('isCurrentTabOpened', handleCurrentTabOpened);
         };
     }, []);
 

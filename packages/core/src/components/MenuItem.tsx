@@ -3,17 +3,17 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
 import * as React from 'react';
-
 import { CheckIcon } from '../icons/CheckIcon';
 import { TextDirection, ThemeContext } from '../theme/ThemeContext';
 import { classNames } from '../utils/classNames';
 
 export const MenuItem: React.FC<{
     checked?: boolean;
+    children?: React.ReactNode;
     icon?: React.ReactElement;
     isDisabled?: boolean;
     testId?: string;

@@ -3,20 +3,19 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
 import type { Store } from '@react-pdf-viewer/core';
-
-import { getCssProperties } from './transformArea';
+import * as React from 'react';
 import { HighlightRect } from './HighlightRect';
-import { NO_SELECTION_STATE, HighlightSelectionState, HighlightState, SelectedState } from './HighlightState';
-import { useRotation } from './useRotation';
+import { getCssProperties } from './transformArea';
+import { HighlightState, HighlightStateType, NO_SELECTION_STATE } from './types/HighlightState';
 import type { RenderHighlightContentProps } from './types/RenderHighlightContentProps';
-import type { RenderHighlightTargetProps } from './types/RenderHighlightTargetProps';
 import type { RenderHighlightsProps } from './types/RenderHighlightsProps';
+import type { RenderHighlightTargetProps } from './types/RenderHighlightTargetProps';
 import type { StoreProps } from './types/StoreProps';
+import { useRotation } from './useRotation';
 
 export const HighlightAreaList: React.FC<{
     pageIndex: number;
@@ -46,40 +45,39 @@ export const HighlightAreaList: React.FC<{
 
     // Filter the selections
     const listAreas =
-        highlightState instanceof HighlightSelectionState
+        highlightState.type === HighlightStateType.Selection
             ? highlightState.highlightAreas.filter((s) => s.pageIndex === pageIndex)
             : [];
 
     return (
         <>
             {renderHighlightTarget &&
-                highlightState instanceof SelectedState &&
+                (highlightState.type === HighlightStateType.Selected ||
+                    highlightState.type === HighlightStateType.ClickDragged) &&
                 highlightState.selectionRegion.pageIndex === pageIndex &&
                 renderHighlightTarget({
                     highlightAreas: highlightState.highlightAreas,
-                    selectedText: highlightState.selectedText,
+                    previewImage: highlightState.previewImage || '',
+                    selectedText: highlightState.selectedText || '',
                     selectionRegion: highlightState.selectionRegion,
                     selectionData: highlightState.selectionData,
                     cancel,
                     toggle: () => {
-                        store.update(
-                            'highlightState',
-                            new HighlightSelectionState(
-                                highlightState.selectedText,
-                                highlightState.highlightAreas,
-                                highlightState.selectionData,
-                                highlightState.selectionRegion
-                            )
-                        );
+                        // Switch to the `Selection` state
+                        const newState = Object.assign({}, highlightState, {
+                            type: HighlightStateType.Selection,
+                        });
+                        store.update('highlightState', newState);
                         window.getSelection().removeAllRanges();
                     },
                 })}
             {renderHighlightContent &&
-                highlightState instanceof HighlightSelectionState &&
+                highlightState.type == HighlightStateType.Selection &&
                 highlightState.selectionRegion.pageIndex === pageIndex &&
                 renderHighlightContent({
                     highlightAreas: highlightState.highlightAreas,
-                    selectedText: highlightState.selectedText,
+                    previewImage: highlightState.previewImage || '',
+                    selectedText: highlightState.selectedText || '',
                     selectionRegion: highlightState.selectionRegion,
                     selectionData: highlightState.selectionData,
                     cancel,

@@ -3,13 +3,12 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import * as React from 'react';
-import { Popover, Position, TextDirection, ThemeContext } from '@react-pdf-viewer/core';
 import type { Store, Toggle } from '@react-pdf-viewer/core';
-
+import { Popover, Position, TextDirection, ThemeContext } from '@react-pdf-viewer/core';
+import * as React from 'react';
 import { SearchPopover } from './SearchPopover';
 import { ShowSearchPopoverButton } from './ShowSearchPopoverButton';
 import type { RenderShowSearchPopoverProps } from './types/RenderShowSearchPopoverProps';
@@ -38,6 +37,7 @@ export const ShowSearchPopover: React.FC<{
     return (
         <Popover
             ariaControlsSuffix="search"
+            lockScroll={false}
             position={portalPosition}
             target={(toggle: Toggle) =>
                 render({

@@ -3,10 +3,14 @@
  *
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
- * @copyright 2019-2022 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { DivText } from './DivText';
+
 export interface SelectionData {
+    divTexts: DivText[];
+    selectedText: string;
     startPageIndex: number;
     endPageIndex: number;
     startOffset: number;
