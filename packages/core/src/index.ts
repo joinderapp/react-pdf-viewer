@@ -52,3 +52,4 @@ export { classNames } from './utils/classNames';
 export { isMac } from './utils/isMac';
 export { getDestination, getPage } from './utils/managePages';
 export { PdfJsApiContext } from './vendors/PdfJsApiContext';
+export { PageSizeCalculatorMode } from './structs/PageSizeCalculatorMode';

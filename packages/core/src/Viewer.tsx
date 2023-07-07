@@ -36,6 +36,7 @@ import type { SetRenderRange, VisiblePagesRange } from './types/SetRenderRange';
 import type { VisibilityChanged } from './types/VisibilityChanged';
 import type { ZoomEvent } from './types/ZoomEvent';
 import { isSameUrl } from './utils/isSameUrl';
+import { PageSizeCalculatorMode } from './structs/PageSizeCalculatorMode';
 
 interface FileState {
     data: PdfJs.FileData;
@@ -87,6 +88,11 @@ export const Viewer: React.FC<{
     // Indicate the cross-site requests should be made with credentials such as cookie and authorization headers.
     // The default value is `false`
     withCredentials?: boolean;
+    //options for range chunking
+    rangeChunkSize?: number;
+    disableStream?: boolean;
+    // Indicate how the page size calculator should function
+    pageSizeCalculatorMode?: PageSizeCalculatorMode;
     onDocumentAskPassword?(e: DocumentAskPasswordEvent): void;
     onDocumentLoad?(e: DocumentLoadEvent): void;
     onPageChange?(e: PageChangeEvent): void;
@@ -119,6 +125,9 @@ export const Viewer: React.FC<{
     },
     viewMode = ViewMode.SinglePage,
     withCredentials = false,
+    rangeChunkSize = 256000,
+    disableStream = true,
+    pageSizeCalculatorMode = PageSizeCalculatorMode.WaitForAllPages,
     onDocumentAskPassword,
     onDocumentLoad = () => {
         /**/
@@ -211,6 +220,8 @@ export const Viewer: React.FC<{
                             characterMap={characterMap}
                             file={file.data}
                             httpHeaders={httpHeaders}
+                            rangeChunkSize={rangeChunkSize}
+                            disableStream={disableStream}
                             render={(doc: PdfJs.PdfDocument) => (
                                 <PageSizeCalculator
                                     defaultScale={defaultScale}
@@ -256,6 +267,7 @@ export const Viewer: React.FC<{
                                     )}
                                     scrollMode={scrollMode}
                                     viewMode={viewMode}
+                                    calculatorMode={pageSizeCalculatorMode}
                                 />
                             )}
                             renderError={renderError}

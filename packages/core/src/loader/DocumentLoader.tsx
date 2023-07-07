@@ -37,6 +37,8 @@ export const DocumentLoader: React.FC<{
     renderProtectedView?: RenderProtectedView;
     transformGetDocumentParams?(options: PdfJs.GetDocumentParams): PdfJs.GetDocumentParams;
     withCredentials: boolean;
+    rangeChunkSize?: number;
+    disableStream?: boolean;
     onDocumentAskPassword?(e: DocumentAskPasswordEvent): void;
 }> = ({
     characterMap,
@@ -49,6 +51,8 @@ export const DocumentLoader: React.FC<{
     transformGetDocumentParams,
     withCredentials,
     onDocumentAskPassword,
+    rangeChunkSize,
+    disableStream,
 }) => {
     const { pdfJsApiProvider } = React.useContext(PdfJsApiContext);
     const { direction } = React.useContext(ThemeContext);
@@ -79,9 +83,8 @@ export const DocumentLoader: React.FC<{
                   }
                 : {},
             {
-                rangeChunkSize: 256000,
-                disableStream: true,
-                //disableAutoFetch: true,
+                rangeChunkSize,
+                disableStream,
             }
         );
         const transformParams = transformGetDocumentParams ? transformGetDocumentParams(params) : params;
@@ -131,7 +134,7 @@ export const DocumentLoader: React.FC<{
             loadingTask.destroy();
             worker.destroy();
         };
-    }, [file]);
+    }, [file, rangeChunkSize, disableStream]);
 
     if (status instanceof AskForPasswordState) {
         return (

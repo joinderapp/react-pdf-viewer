@@ -71,3 +71,15 @@ Be my friend on
 -   [Twitter](https://twitter.com/nghuuphuoc)
 -   [dev.to](https://dev.to/phuocng)
 -   [Github](https://github.com/phuoc-ng)
+
+## How to update package for Github releases
+-   cd into packages folder
+
+-   npm run build && npm pack
+
+-   git tag @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master && git push --tags
+
+-   gh release create --target master --title @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master --notes '' @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master react-pdf-viewer-<PACKAGE_NAME>-<VERSION>.tgz
+
+** Ensure to replace <PACKAGE_NAME> and <PACKAGE_NAME> with the right package name and version number
+Example: @react-pdf-viewer/core@3.12.0-master **

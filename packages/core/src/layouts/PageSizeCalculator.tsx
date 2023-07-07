@@ -4,6 +4,7 @@
  * @see https://react-pdf-viewer.dev
  * @license https://react-pdf-viewer.dev/license
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
+ * @contributor Tolulope Adetula <abeltolu@gmail.com>
  */
 
 import * as React from 'react';
@@ -16,6 +17,7 @@ import type { PdfJs } from '../types/PdfJs';
 import { getPage } from '../utils/managePages';
 import { decrease } from '../zoom/zoomingLevel';
 import { calculateScale } from './calculateScale';
+import { PageSizeCalculatorMode } from '../structs/PageSizeCalculatorMode';
 
 // The height that can be reserved for additional elements such as toolbar
 const RESERVE_HEIGHT = 45;
@@ -29,7 +31,8 @@ export const PageSizeCalculator: React.FC<{
     render(pageSizes: PageSize[], initialScale: number): React.ReactElement;
     scrollMode: ScrollMode;
     viewMode: ViewMode;
-}> = ({ defaultScale, doc, render, scrollMode, viewMode }) => {
+    calculatorMode?: PageSizeCalculatorMode;
+}> = ({ defaultScale, doc, render, scrollMode, viewMode, calculatorMode = PageSizeCalculatorMode.WaitForAllPages }) => {
     const pagesRef = React.useRef<HTMLDivElement>();
     const [state, setState] = React.useState<{
         pageSizes: PageSize[];
@@ -45,14 +48,16 @@ export const PageSizeCalculator: React.FC<{
             .map(
                 (_, i) =>
                     new Promise<PageSize>((resolve, _) => {
-                        getPage(doc, i).then((pdfPage) => {
-                            const viewport = pdfPage.getViewport({ scale: 1 });
-                            resolve({
-                                pageHeight: viewport.height,
-                                pageWidth: viewport.width,
-                                rotation: viewport.rotation,
-                            });
-                        });
+                        getPage(doc, calculatorMode === PageSizeCalculatorMode.WaitForAllPages ? i : 1).then(
+                            (pdfPage) => {
+                                const viewport = pdfPage.getViewport({ scale: 1 });
+                                resolve({
+                                    pageHeight: viewport.height,
+                                    pageWidth: viewport.width,
+                                    rotation: viewport.rotation,
+                                });
+                            }
+                        );
                     })
             );
         Promise.all(queryPageSizes).then((pageSizes) => {
@@ -85,7 +90,7 @@ export const PageSizeCalculator: React.FC<{
                     break;
             }
 
-            let scale = defaultScale
+            const scale = defaultScale
                 ? typeof defaultScale === 'string'
                     ? calculateScale(parentEle, h, w, defaultScale, viewMode, doc.numPages)
                     : defaultScale

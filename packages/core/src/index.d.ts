@@ -268,6 +268,11 @@ export enum ScrollMode {
     Wrapped = 'Wrapped',
 }
 
+export enum PageSizeCalculatorMode {
+    WaitForAllPages = 'WaitForAllPages',
+    WaitForFirstPage = 'WaitForFirstPage',
+}
+
 export enum SpecialZoomLevel {
     ActualSize = 'ActualSize',
     PageFit = 'PageFit',
@@ -591,6 +596,11 @@ export interface ViewerProps {
     // Indicate the cross-site requests should be made with credentials such as cookie and authorization headers.
     // The default value is `false`
     withCredentials?: boolean;
+    //options for range chunking
+    rangeChunkSize?: number;
+    disableStream?: boolean;
+    // Indicate how the page size calculator should function
+    pageSizeCalculatorMode?: PageSizeCalculatorMode;
     onDocumentAskPassword?(e: DocumentAskPasswordEvent): void;
     onDocumentLoad?(e: DocumentLoadEvent): void;
     onPageChange?(e: PageChangeEvent): void;
