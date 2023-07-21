@@ -48,16 +48,17 @@ export const PageSizeCalculator: React.FC<{
             .map(
                 (_, i) =>
                     new Promise<PageSize>((resolve, _) => {
-                        getPage(doc, calculatorMode === PageSizeCalculatorMode.WaitForAllPages ? i : 1).then(
-                            (pdfPage) => {
-                                const viewport = pdfPage.getViewport({ scale: 1 });
-                                resolve({
-                                    pageHeight: viewport.height,
-                                    pageWidth: viewport.width,
-                                    rotation: viewport.rotation,
-                                });
-                            }
-                        );
+                        getPage(
+                            doc,
+                            calculatorMode === PageSizeCalculatorMode.WaitForAllPages || doc.numPages <= 1 ? i : 1
+                        ).then((pdfPage) => {
+                            const viewport = pdfPage.getViewport({ scale: 1 });
+                            resolve({
+                                pageHeight: viewport.height,
+                                pageWidth: viewport.width,
+                                rotation: viewport.rotation,
+                            });
+                        });
                     })
             );
         Promise.all(queryPageSizes).then((pageSizes) => {
