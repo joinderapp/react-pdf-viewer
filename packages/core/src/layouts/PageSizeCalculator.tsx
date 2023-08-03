@@ -43,18 +43,34 @@ export const PageSizeCalculator: React.FC<{
     });
 
     React.useLayoutEffect(() => {
-        getPage(doc, 0).then((pdfPage) => {
-            const viewport = pdfPage.getViewport({ scale: 1 });
-
+        const queryPageSizes = Array(doc.numPages)
+            .fill(0)
+            .map(
+                (_, i) =>
+                    new Promise<PageSize>((resolve, _) => {
+                        getPage(
+                            doc,
+                            0
+                        ).then((pdfPage) => {
+                            const viewport = pdfPage.getViewport({ scale: 1 });
+                            resolve({
+                                pageHeight: viewport.height,
+                                pageWidth: viewport.width,
+                                rotation: viewport.rotation,
+                            });
+                        });
+                    })
+            );
+        Promise.all(queryPageSizes).then((pageSizes) => {
             // Determine the initial scale
             const pagesEle = pagesRef.current;
-            if (!pagesEle) {
+            if (!pagesEle || pageSizes.length === 0) {
                 return;
             }
 
             // Get the dimension of the first page
-            const w = viewport.width;
-            const h = viewport.height;
+            const w = pageSizes[0].pageWidth;
+            const h = pageSizes[0].pageHeight;
 
             // The `pagesRef` element will be destroyed when the size calculation is completed
             // To make it more easy for testing, we take the parent element which is always visible
@@ -80,14 +96,6 @@ export const PageSizeCalculator: React.FC<{
                     ? calculateScale(parentEle, h, w, defaultScale, viewMode, doc.numPages)
                     : defaultScale
                 : decrease(scaled);
-
-            const pageSizes = Array(doc.numPages)
-                .fill(0)
-                .map((_) => ({
-                    pageHeight: viewport.height,
-                    pageWidth: viewport.width,
-                    rotation: viewport.rotation,
-                }));
 
             setState({ pageSizes, scale });
         });
