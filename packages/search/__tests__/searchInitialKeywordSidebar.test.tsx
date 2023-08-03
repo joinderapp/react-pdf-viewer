@@ -1,16 +1,9 @@
-import {
-    MinimalButton,
-    PdfJsApiContext,
-    Spinner,
-    TextBox,
-    Viewer,
-    type PdfJsApiProvider,
-} from '@react-pdf-viewer/core';
+import { MinimalButton, Spinner, TextBox, Viewer } from '@react-pdf-viewer/core';
 import { render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
-import { NextIcon, PreviousIcon, searchPlugin, type Match, type RenderSearchProps } from '../src';
+import type { Match, RenderSearchProps } from '../src';
+import { NextIcon, PreviousIcon, searchPlugin } from '../src';
 
 enum SearchStatus {
     NotSearchedYet,
@@ -203,7 +196,6 @@ const TestSearchInitialKeywordSidebar: React.FC<{
     fileUrl: Uint8Array;
     keyword: string;
 }> = ({ fileUrl, keyword }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const searchPluginInstance = searchPlugin({
         keyword: {
             keyword,
@@ -213,40 +205,38 @@ const TestSearchInitialKeywordSidebar: React.FC<{
     const { Search } = searchPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <div
+            style={{
+                border: '1px solid rgba(0, 0, 0, .3)',
+                display: 'flex',
+                height: '50rem',
+                width: '64rem',
+            }}
+        >
             <div
                 style={{
-                    border: '1px solid rgba(0, 0, 0, .3)',
-                    display: 'flex',
-                    height: '50rem',
-                    width: '64rem',
+                    borderRight: '1px solid rgba(0, 0, 0, .2)',
+                    flex: '0 0 15rem',
+                    width: '15rem',
                 }}
             >
-                <div
-                    style={{
-                        borderRight: '1px solid rgba(0, 0, 0, .2)',
-                        flex: '0 0 15rem',
-                        width: '15rem',
-                    }}
-                >
-                    <Search>
-                        {(renderSearchProps: RenderSearchProps) => (
-                            <SearchSidebarInner renderSearchProps={renderSearchProps} />
-                        )}
-                    </Search>
-                </div>
-
-                <div style={{ flex: 1 }}>
-                    <Viewer fileUrl={fileUrl} plugins={[searchPluginInstance]} />
-                </div>
+                <Search>
+                    {(renderSearchProps: RenderSearchProps) => (
+                        <SearchSidebarInner renderSearchProps={renderSearchProps} />
+                    )}
+                </Search>
             </div>
-        </PdfJsApiContext.Provider>
+
+            <div style={{ flex: 1 }}>
+                <Viewer fileUrl={fileUrl} plugins={[searchPluginInstance]} />
+            </div>
+        </div>
     );
 };
 
 test('Perform search for the initial keyword in a sidebar', async () => {
     const { findByPlaceholderText, findByTestId, getByTestId } = render(
-        <TestSearchInitialKeywordSidebar fileUrl={global['__OPEN_PARAMS_PDF__']} keyword="PDF" />,
+        <TestSearchInitialKeywordSidebar fileUrl={global['__OPEN_PARAMS_PDF__']} keyword="PDF" />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -266,12 +256,12 @@ test('Perform search for the initial keyword in a sidebar', async () => {
     await findByTestId('core__annotation-layer-3');
 
     // Check if the keyword is populated properly
-    const searchInput = await findByPlaceholderText('Enter to search');
-    const currentKeyword = (searchInput as HTMLInputElement).value;
+    let searchInput = await findByPlaceholderText('Enter to search');
+    let currentKeyword = (searchInput as HTMLInputElement).value;
     expect(currentKeyword).toEqual('PDF');
 
     // Check the number of matches
-    const numOfMatchesLabel = await findByTestId('num-matches');
-    const numOfMatches = numOfMatchesLabel.textContent;
+    let numOfMatchesLabel = await findByTestId('num-matches');
+    let numOfMatches = numOfMatchesLabel.textContent;
     expect(numOfMatches).toEqual('Found 28 results');
 });

@@ -3,19 +3,21 @@
     "private": true,
     "version": "0.0.0",
     "scripts": {
-        "build": "webpack --mode production",
-        "dev": "NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack serve"
+        "copy": "cp -rf ../../samples/* dist",
+        "build": "rm -rf dist && mkdir dist && webpack --mode production && npm run copy",
+        "dev": "rm -rf dist && mkdir dist && npm run copy && NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack serve"
     },
     "dependencies": {
         "@react-pdf-viewer/core": "../../node_modules/@react-pdf-viewer/core",
         "@react-pdf-viewer/default-layout": "../../node_modules/@react-pdf-viewer/default-layout",
         "@react-pdf-viewer/legacy-worker": "../../node_modules/@react-pdf-viewer/legacy-worker",
+        "pdfjs-dist": "^3.7.107",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
     "devDependencies": {
-        "@babel/core": "^7.22.9",
-        "@babel/preset-env": "^7.22.9",
+        "@babel/core": "^7.22.5",
+        "@babel/preset-env": "^7.22.5",
         "@babel/preset-react": "^7.22.5",
         "@babel/preset-typescript": "^7.22.5",
         "babel-loader": "^8.3.0",
@@ -23,7 +25,6 @@
         "css-loader": "^5.2.7",
         "html-webpack-plugin": "^4.5.2",
         "mini-css-extract-plugin": "^1.6.2",
-        "pdfjs-dist": "^3.8.162",
         "sass-loader": "^10.4.1",
         "style-loader": "^2.0.0",
         "webpack": "^4.46.0",

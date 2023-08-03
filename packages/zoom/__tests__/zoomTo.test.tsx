@@ -1,6 +1,5 @@
-import { PdfJsApiContext, PrimaryButton, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
+import { PrimaryButton, Viewer } from '@react-pdf-viewer/core';
+import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { zoomPlugin } from '../src';
@@ -8,12 +7,11 @@ import { zoomPlugin } from '../src';
 const TestCallZoomMethod: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const zoomPluginInstance = zoomPlugin();
     const { zoomTo } = zoomPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <>
             <div
                 style={{
                     marginBottom: '16px',
@@ -30,13 +28,13 @@ const TestCallZoomMethod: React.FC<{
             >
                 <Viewer fileUrl={fileUrl} plugins={[zoomPluginInstance]} />
             </div>
-        </PdfJsApiContext.Provider>
+        </>
     );
 };
 
 test('call zoom() method', async () => {
     const { findByTestId, findByText, getByTestId } = render(
-        <TestCallZoomMethod fileUrl={global['__MULTIPLE_PAGES_PDF__']} />,
+        <TestCallZoomMethod fileUrl={global['__MULTIPLE_PAGES_PDF__']} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -45,12 +43,12 @@ test('call zoom() method', async () => {
     viewerEle['__jsdomMockClientWidth'] = 798;
 
     // Wait until the document is loaded completely
-    await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
     await findByTestId('core__text-layer-0');
     await findByTestId('core__text-layer-1');
 
     // Now zoom the document
-    const zoomButton = await findByText('Zoom to 150%');
+    const zoomButton = await screen.findByText('Zoom to 150%');
     fireEvent.click(zoomButton);
 
     const lastPage = getByTestId('core__page-layer-1');

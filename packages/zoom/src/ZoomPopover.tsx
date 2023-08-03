@@ -6,7 +6,9 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { LocalizationMap, Toggle } from '@react-pdf-viewer/core';
 import {
+    classNames,
     LocalizationContext,
     Menu,
     MenuDivider,
@@ -17,9 +19,6 @@ import {
     SpecialZoomLevel,
     TextDirection,
     ThemeContext,
-    classNames,
-    type LocalizationMap,
-    type Toggle,
 } from '@react-pdf-viewer/core';
 import * as React from 'react';
 

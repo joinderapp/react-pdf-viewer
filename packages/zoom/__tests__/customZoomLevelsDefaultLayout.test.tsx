@@ -1,8 +1,7 @@
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import { type ToolbarProps, type ToolbarSlot, type TransformToolbarSlot } from '@react-pdf-viewer/toolbar';
+import type { ToolbarProps, ToolbarSlot, TransformToolbarSlot } from '@react-pdf-viewer/toolbar';
 import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
@@ -10,7 +9,6 @@ import { mockResize } from '../../../test-utils/mockResizeObserver';
 const TestZoomLevelsWithDefaultLayout: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const defaultLayoutPluginInstance = defaultLayoutPlugin({
         renderToolbar: (Toolbar: (props: ToolbarProps) => React.ReactElement) => (
             <Toolbar>{renderDefaultToolbar(transform)}</Toolbar>
@@ -27,23 +25,21 @@ const TestZoomLevelsWithDefaultLayout: React.FC<{
     };
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <div
-                style={{
-                    border: '1px solid rgba(0, 0, 0, .3)',
-                    height: '50rem',
-                    width: '50rem',
-                }}
-            >
-                <Viewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance]} />
-            </div>
-        </PdfJsApiContext.Provider>
+        <div
+            style={{
+                border: '1px solid rgba(0, 0, 0, .3)',
+                height: '50rem',
+                width: '50rem',
+            }}
+        >
+            <Viewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance]} />
+        </div>
     );
 };
 
 test('Custom zoom levels with the default layout', async () => {
     const { findByTestId, findByText, getByRole, getByTestId } = render(
-        <TestZoomLevelsWithDefaultLayout fileUrl={global['__OPEN_PARAMS_PDF__']} />,
+        <TestZoomLevelsWithDefaultLayout fileUrl={global['__OPEN_PARAMS_PDF__']} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -71,7 +67,7 @@ test('Custom zoom levels with the default layout', async () => {
     const firstPage = await findByTestId('core__page-layer-0');
 
     // Zoom the document
-    const zoomButton = getByRole('button', { name: 'Zoom document' });
+    let zoomButton = await getByRole('button', { name: 'Zoom document' });
     fireEvent.click(zoomButton);
 
     const menuItem = await findByText('320%');

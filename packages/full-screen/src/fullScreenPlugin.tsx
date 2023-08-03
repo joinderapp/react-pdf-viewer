@@ -6,15 +6,8 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import {
-    FullScreenMode,
-    createStore,
-    type Plugin,
-    type PluginFunctions,
-    type RenderViewer,
-    type Slot,
-    type ViewerState,
-} from '@react-pdf-viewer/core';
+import type { Plugin, PluginFunctions, RenderViewer, Slot, ViewerState } from '@react-pdf-viewer/core';
+import { createStore, FullScreenMode } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { EnterFullScreen, EnterFullScreenProps } from './EnterFullScreen';
 import { EnterFullScreenButton } from './EnterFullScreenButton';
@@ -22,8 +15,8 @@ import { EnterFullScreenMenuItem, EnterFullScreenMenuItemProps } from './EnterFu
 import { ExitFullScreen, RenderExitFullScreenProps } from './ExitFullScreen';
 import { FullScreenModeTracker } from './FullScreenModeTracker';
 import { ShortcutHandler } from './ShortcutHandler';
-import { type StoreProps } from './types/StoreProps';
-import { type Zoom } from './types/Zoom';
+import type { StoreProps } from './types/StoreProps';
+import type { Zoom } from './types/Zoom';
 
 export interface FullScreenPlugin extends Plugin {
     EnterFullScreen: (props: EnterFullScreenProps) => React.ReactElement;
@@ -49,9 +42,9 @@ export const fullScreenPlugin = (props?: FullScreenPluginProps): FullScreenPlugi
             Object.assign(
                 {},
                 { enableShortcuts: true, onEnterFullScreen: () => {}, onExitFullScreen: () => {} },
-                props,
+                props
             ),
-        [],
+        []
     );
 
     const store = React.useMemo(
@@ -62,7 +55,7 @@ export const fullScreenPlugin = (props?: FullScreenPluginProps): FullScreenPlugi
                 fullScreenMode: FullScreenMode.Normal,
                 zoom: () => {},
             }),
-        [],
+        []
     );
     /* eslint-enable @typescript-eslint/no-empty-function */
 

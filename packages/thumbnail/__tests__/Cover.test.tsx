@@ -1,18 +1,12 @@
-import {
-    Button,
-    PdfJsApiContext,
-    Viewer,
-    type PdfJsApiProvider,
-    type Plugin,
-    type RenderViewer,
-} from '@react-pdf-viewer/core';
+import type { Plugin, RenderViewer } from '@react-pdf-viewer/core';
+import { Button, Viewer } from '@react-pdf-viewer/core';
 import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as fs from 'node:fs';
-import * as path from 'path';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { thumbnailPlugin } from '../src';
+
+const fs = require('fs');
+const path = require('path');
 
 interface PageThumbnailPluginProps {
     PageThumbnail: React.ReactElement;
@@ -40,18 +34,13 @@ const ThumbnailCover: React.FC<{
     fileUrl: Uint8Array;
     pageIndex: number;
 }> = ({ fileUrl, pageIndex }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const thumbnailPluginInstance = thumbnailPlugin();
     const { Cover } = thumbnailPluginInstance;
     const pageThumbnailPluginInstance = pageThumbnailPlugin({
         PageThumbnail: <Cover getPageIndex={() => pageIndex} />,
     });
 
-    return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <Viewer fileUrl={fileUrl} plugins={[pageThumbnailPluginInstance, thumbnailPluginInstance]} />
-        </PdfJsApiContext.Provider>
-    );
+    return <Viewer fileUrl={fileUrl} plugins={[pageThumbnailPluginInstance, thumbnailPluginInstance]} />;
 };
 
 const TestCover: React.FC<{
@@ -90,14 +79,14 @@ test('Test <Cover />', async () => {
     const src = image.getAttribute('src');
     expect(src?.length).toEqual(61722);
     expect(src?.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAO4AAAE+CAYAAACKpyy5AAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV',
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAO4AAAE+CAYAAACKpyy5AAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV'
     );
 });
 
 const TestMultipleCovers = () => {
     const pageLabelDocument = React.useMemo(
         () => new Uint8Array(fs.readFileSync(path.resolve(__dirname, '../../../samples/ignore/page-labels.pdf'))),
-        [],
+        []
     );
 
     return (
@@ -109,7 +98,7 @@ const TestMultipleCovers = () => {
 };
 
 test('Test multiple <Cover />', async () => {
-    const { findByTestId, getAllByTestId, getByTestId } = render(<TestMultipleCovers />);
+    const { findByTestId, findAllByTestId, getAllByTestId, getByTestId } = render(<TestMultipleCovers />);
 
     // Test the cover of the first document
     const viewerEleList = getAllByTestId('core__viewer');
@@ -129,7 +118,7 @@ test('Test multiple <Cover />', async () => {
     let src = image.getAttribute('src');
     expect(src?.length).toEqual(12154);
     expect(src?.slice(-100)).toEqual(
-        'IeqfHGwKoSAJVwgFSbhCKEjCFUJBEq4QCpJwhVCQhCuEgiRcIRQk4QqhIAlXCAVJuEIo6P8DgxmhOluzxw0AAAAASUVORK5CYII=',
+        'IeqfHGwKoSAJVwgFSbhCKEjCFUJBEq4QCpJwhVCQhCuEgiRcIRQk4QqhIAlXCAVJuEIo6P8DgxmhOluzxw0AAAAASUVORK5CYII='
     );
 
     // So we can query the cover of second document
@@ -153,14 +142,14 @@ test('Test multiple <Cover />', async () => {
     src = image.getAttribute('src');
     expect(src?.length).toEqual(1998);
     expect(src?.slice(-100)).toEqual(
-        'ETXEiBpiRA0xooYYUUOMqCFG1BAjaogRNcSIGmJEDTGihhhRQ4yoIUbUECNqiBE1xIgaYv4DB66eMUgszcEAAAAASUVORK5CYII=',
+        'ETXEiBpiRA0xooYYUUOMqCFG1BAjaogRNcSIGmJEDTGihhhRQ4yoIUbUECNqiBE1xIgaYv4DB66eMUgszcEAAAAASUVORK5CYII='
     );
 });
 
 const TestCoverDynamicDocument = () => {
     const pageLabelDocument = React.useMemo(
         () => new Uint8Array(fs.readFileSync(path.resolve(__dirname, '../../../samples/ignore/page-labels.pdf'))),
-        [],
+        []
     );
     const [fileUrl, setFileUrl] = React.useState(global['__OPEN_PARAMS_PDF__']);
 
@@ -213,7 +202,7 @@ test('Test <Cover /> with dynamic document', async () => {
     let src = image.getAttribute('src');
     expect(src?.length).toEqual(11662);
     expect(src?.slice(-100)).toEqual(
-        'K2IgBVfEQAquiIEUXBEDKbgiBlJwRQyk4IoYSMEVMZCCK2IgBVfEQAquiIEUXBEDKbgiBvof61fzlJ7KkmoAAAAASUVORK5CYII=',
+        'K2IgBVfEQAquiIEUXBEDKbgiBlJwRQyk4IoYSMEVMZCCK2IgBVfEQAquiIEUXBEDKbgiBvof61fzlJ7KkmoAAAAASUVORK5CYII='
     );
 
     viewerEle = await findByTestId('core__viewer');
@@ -236,6 +225,6 @@ test('Test <Cover /> with dynamic document', async () => {
     src = image.getAttribute('src');
     expect(src?.length).toEqual(1998);
     expect(src?.slice(-100)).toEqual(
-        'ETXEiBpiRA0xooYYUUOMqCFG1BAjaogRNcSIGmJEDTGihhhRQ4yoIUbUECNqiBE1xIgaYv4DB66eMUgszcEAAAAASUVORK5CYII=',
+        'ETXEiBpiRA0xooYYUUOMqCFG1BAjaogRNcSIGmJEDTGihhhRQ4yoIUbUECNqiBE1xIgaYv4DB66eMUgszcEAAAAASUVORK5CYII='
     );
 });

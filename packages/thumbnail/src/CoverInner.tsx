@@ -6,18 +6,10 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import {
-    Spinner,
-    getPage,
-    useIntersectionObserver,
-    useIsMounted,
-    type PdfJs,
-    type Store,
-    type StoreHandler,
-    type VisibilityChanged,
-} from '@react-pdf-viewer/core';
+import type { PdfJs, Store, StoreHandler, VisibilityChanged } from '@react-pdf-viewer/core';
+import { getPage, Spinner, useIntersectionObserver, useIsMounted } from '@react-pdf-viewer/core';
 import * as React from 'react';
-import { type StoreProps } from './types/StoreProps';
+import { StoreProps } from './types/StoreProps';
 
 export const CoverInner: React.FC<{
     doc: PdfJs.PdfDocument;
@@ -109,7 +101,7 @@ export const CoverInner: React.FC<{
                 },
                 (): void => {
                     /**/
-                },
+                }
             );
         });
     }, [pageRotation, isVisible]);

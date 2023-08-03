@@ -6,17 +6,8 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import {
-    LocalizationContext,
-    Menu,
-    MenuItem,
-    MinimalButton,
-    Popover,
-    Position,
-    Tooltip,
-    type LocalizationMap,
-    type Toggle,
-} from '@react-pdf-viewer/core';
+import type { LocalizationMap, Toggle } from '@react-pdf-viewer/core';
+import { LocalizationContext, Menu, MenuItem, MinimalButton, Popover, Position, Tooltip } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { LocaleIcon } from './LocaleIcon';
 

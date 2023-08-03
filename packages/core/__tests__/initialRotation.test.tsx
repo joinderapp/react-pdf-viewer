@@ -1,17 +1,13 @@
 import { render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '../src';
+import { Viewer } from '../src';
 
 test('initialRotation option', async () => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const App = () => (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <div style={{ height: '50rem', width: '50rem' }}>
-                <Viewer fileUrl={global['__SAMPLE_PDF__']} initialRotation={90} />
-            </div>
-        </PdfJsApiContext.Provider>
+        <div style={{ height: '50rem', width: '50rem' }}>
+            <Viewer fileUrl={global['__SAMPLE_PDF__']} initialRotation={90} />
+        </div>
     );
     const { getByTestId, findByTestId, findByText } = render(<App />);
     const viewerEle = getByTestId('core__viewer');

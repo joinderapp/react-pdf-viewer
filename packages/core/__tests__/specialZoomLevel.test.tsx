@@ -1,25 +1,17 @@
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import { fireEvent, render, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
-import { PdfJsApiContext, SpecialZoomLevel, Viewer, type PdfJsApiProvider } from '../src';
+import { SpecialZoomLevel, Viewer } from '../src';
 
 const TestDefaultScaleSpecialZoomLevel: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <Viewer
-                fileUrl={fileUrl}
-                defaultScale={SpecialZoomLevel.PageWidth}
-                plugins={[defaultLayoutPluginInstance]}
-            />
-        </PdfJsApiContext.Provider>
+        <Viewer fileUrl={fileUrl} defaultScale={SpecialZoomLevel.PageWidth} plugins={[defaultLayoutPluginInstance]} />
     );
 };
 
@@ -82,7 +74,7 @@ test('Keep special defaultScale after resizing', async () => {
     await findByTestId('core__text-layer-3');
     await findByTestId('core__annotation-layer-3');
 
-    const firstPage = await findByTestId('core__page-layer-0');
+    let firstPage = await findByTestId('core__page-layer-0');
     const w1 = parseInt(firstPage.style.width, 10);
     const h1 = parseInt(firstPage.style.height, 10);
     expect(w1).toEqual(783);

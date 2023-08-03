@@ -6,68 +6,54 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import { type Plugin } from '@react-pdf-viewer/core';
-import {
-    type EnterFullScreenMenuItemProps,
-    type EnterFullScreenProps,
-    type FullScreenPlugin,
-    type FullScreenPluginProps,
+import type { Plugin } from '@react-pdf-viewer/core';
+import type {
+    EnterFullScreenMenuItemProps,
+    EnterFullScreenProps,
+    FullScreenPlugin,
+    FullScreenPluginProps,
 } from '@react-pdf-viewer/full-screen';
-import {
-    type DownloadMenuItemProps,
-    type DownloadProps,
-    type GetFilePlugin,
-    type GetFilePluginProps,
+import type {
+    DownloadMenuItemProps,
+    DownloadProps,
+    GetFilePlugin,
+    GetFilePluginProps,
 } from '@react-pdf-viewer/get-file';
-import { type OpenPlugin, type OpenPluginProps, type OpenProps } from '@react-pdf-viewer/open';
-import {
-    type CurrentPageLabelProps,
-    type GoToPageMenuItemProps,
-    type GoToPageProps,
-    type NumberOfPagesProps,
-    type PageNavigationPlugin,
-    type PageNavigationPluginProps,
+import type { OpenPlugin, OpenPluginProps, OpenProps } from '@react-pdf-viewer/open';
+import type {
+    CurrentPageLabelProps,
+    GoToPageMenuItemProps,
+    GoToPageProps,
+    NumberOfPagesProps,
+    PageNavigationPlugin,
+    PageNavigationPluginProps,
 } from '@react-pdf-viewer/page-navigation';
-import {
-    type PrintMenuItemProps,
-    type PrintPlugin,
-    type PrintPluginProps,
-    type PrintProps,
-} from '@react-pdf-viewer/print';
-import {
-    type PropertiesPlugin,
-    type ShowPropertiesMenuItemProps,
-    type ShowPropertiesProps,
-} from '@react-pdf-viewer/properties';
-import { type RotateDecoratorProps, type RotatePlugin, type RotateProps } from '@react-pdf-viewer/rotate';
-import {
-    type ScrollModePlugin,
-    type SwitchScrollModeMenuItemProps,
-    type SwitchScrollModeProps,
-    type SwitchViewModeMenuItemProps,
-    type SwitchViewModeProps,
+import type { PrintMenuItemProps, PrintPlugin, PrintPluginProps, PrintProps } from '@react-pdf-viewer/print';
+import type { PropertiesPlugin, ShowPropertiesMenuItemProps, ShowPropertiesProps } from '@react-pdf-viewer/properties';
+import type { RotateDecoratorProps, RotatePlugin, RotateProps } from '@react-pdf-viewer/rotate';
+import type {
+    ScrollModePlugin,
+    SwitchScrollModeMenuItemProps,
+    SwitchScrollModeProps,
+    SwitchViewModeMenuItemProps,
+    SwitchViewModeProps,
 } from '@react-pdf-viewer/scroll-mode';
-import {
-    type SearchPlugin,
-    type SearchPluginProps,
-    type SearchProps,
-    type ShowSearchPopoverProps,
-} from '@react-pdf-viewer/search';
-import {
-    type SelectionModePlugin,
-    type SelectionModePluginProps,
-    type SwitchSelectionModeMenuItemProps,
-    type SwitchSelectionModeProps,
+import type { SearchPlugin, SearchPluginProps, SearchProps, ShowSearchPopoverProps } from '@react-pdf-viewer/search';
+import type {
+    SelectionModePlugin,
+    SelectionModePluginProps,
+    SwitchSelectionModeMenuItemProps,
+    SwitchSelectionModeProps,
 } from '@react-pdf-viewer/selection-mode';
-import { type SwitchThemeMenuItemProps, type SwitchThemeProps, type ThemePlugin } from '@react-pdf-viewer/theme';
-import {
-    type CurrentScaleProps,
-    type ZoomInProps,
-    type ZoomMenuItemProps,
-    type ZoomOutProps,
-    type ZoomPlugin,
-    type ZoomPluginProps,
-    type ZoomProps,
+import type { SwitchThemeMenuItemProps, SwitchThemeProps, ThemePlugin } from '@react-pdf-viewer/theme';
+import type {
+    CurrentScaleProps,
+    ZoomInProps,
+    ZoomMenuItemProps,
+    ZoomOutProps,
+    ZoomPlugin,
+    ZoomPluginProps,
+    ZoomProps,
 } from '@react-pdf-viewer/zoom';
 import * as React from 'react';
 
@@ -136,7 +122,7 @@ export type TransformToolbarSlot = (toolbarSlot: ToolbarSlot) => ToolbarSlot;
 // Plugin
 export interface ToolbarPlugin extends Plugin {
     renderDefaultToolbar: (
-        transformToolbarSlot: TransformToolbarSlot,
+        transformToolbarSlot: TransformToolbarSlot
     ) => (defaultToolbarSlot: ToolbarSlot) => React.ReactElement;
     Toolbar: (props: ToolbarProps) => React.ReactElement;
     // Plugins instance

@@ -1,18 +1,17 @@
-import { Button, PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Button, Viewer } from '@react-pdf-viewer/core';
 import { fireEvent, render, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
-import * as fs from 'node:fs';
-import * as path from 'path';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
 import { pageNavigationPlugin } from '../src';
 
+const fs = require('fs');
+const path = require('path');
+
 const TestCurrentPageLabelDynamicDocument = () => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const pageLabelDocument = React.useMemo(
         () => new Uint8Array(fs.readFileSync(path.resolve(__dirname, '../../../samples/ignore/page-labels-2.pdf'))),
-        [],
+        []
     );
 
     const [fileUrl, setFileUrl] = React.useState<Uint8Array>();
@@ -20,7 +19,7 @@ const TestCurrentPageLabelDynamicDocument = () => {
     const { CurrentPageLabel } = pageNavigationPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <div>
             <div style={{ display: 'flex', marginBottom: '0.5rem' }}>
                 <div style={{ marginRight: '0.5rem' }}>
                     <Button onClick={() => setFileUrl(global['__OPEN_PARAMS_PDF__'])}>Load document 1</Button>
@@ -60,7 +59,7 @@ const TestCurrentPageLabelDynamicDocument = () => {
                     </div>
                 </div>
             )}
-        </PdfJsApiContext.Provider>
+        </div>
     );
 };
 

@@ -6,18 +6,12 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import {
-    LocalizationContext,
-    MinimalButton,
-    Position,
-    RotateDirection,
-    Tooltip,
-    type LocalizationMap,
-} from '@react-pdf-viewer/core';
+import type { LocalizationMap } from '@react-pdf-viewer/core';
+import { LocalizationContext, MinimalButton, Position, RotateDirection, Tooltip } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { RotateBackwardIcon } from './RotateBackwardIcon';
 import { RotateForwardIcon } from './RotateForwardIcon';
-import { type RenderRotateProps } from './types/RenderRotateProps';
+import type { RenderRotateProps } from './types/RenderRotateProps';
 
 const TOOLTIP_OFFSET = { left: 0, top: 8 };
 

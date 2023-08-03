@@ -10,10 +10,10 @@
 import * as React from 'react';
 import { Spinner } from '../components/Spinner';
 import { ScrollMode } from '../structs/ScrollMode';
-import { SpecialZoomLevel } from '../structs/SpecialZoomLevel';
 import { ViewMode } from '../structs/ViewMode';
-import { type PageSize } from '../types/PageSize';
-import { type PdfJs } from '../types/PdfJs';
+import { SpecialZoomLevel } from '../structs/SpecialZoomLevel';
+import type { PageSize } from '../types/PageSize';
+import type { PdfJs } from '../types/PdfJs';
 import { getPage } from '../utils/managePages';
 import { decrease } from '../zoom/zoomingLevel';
 import { calculateScale } from './calculateScale';
@@ -28,17 +28,17 @@ const RESERVE_WIDTH = 45;
 export const PageSizeCalculator: React.FC<{
     defaultScale?: number | SpecialZoomLevel;
     doc: PdfJs.PdfDocument;
-    render(estimatedPageSizes: PageSize[], initialScale: number): React.ReactElement;
+    render(pageSizes: PageSize[], initialScale: number): React.ReactElement;
     scrollMode: ScrollMode;
     viewMode: ViewMode;
     calculatorMode?: PageSizeCalculatorMode;
 }> = ({ defaultScale, doc, render, scrollMode, viewMode }) => {
     const pagesRef = React.useRef<HTMLDivElement>();
     const [state, setState] = React.useState<{
-        estimatedPageSizes: PageSize[];
+        pageSizes: PageSize[];
         scale: number;
     }>({
-        estimatedPageSizes: [],
+        pageSizes: [],
         scale: 0,
     });
 
@@ -81,7 +81,7 @@ export const PageSizeCalculator: React.FC<{
                     : defaultScale
                 : decrease(scaled);
 
-            const estimatedPageSizes = Array(doc.numPages)
+            const pageSizes = Array(doc.numPages)
                 .fill(0)
                 .map((_) => ({
                     pageHeight: viewport.height,
@@ -89,15 +89,15 @@ export const PageSizeCalculator: React.FC<{
                     rotation: viewport.rotation,
                 }));
 
-            setState({ estimatedPageSizes, scale });
+            setState({ pageSizes, scale });
         });
     }, [doc.loadingTask.docId]);
 
-    return state.estimatedPageSizes.length === 0 || state.scale === 0 ? (
+    return state.pageSizes.length === 0 || state.scale === 0 ? (
         <div className="rpv-core__page-size-calculator" data-testid="core__page-size-calculating" ref={pagesRef}>
             <Spinner />
         </div>
     ) : (
-        render(state.estimatedPageSizes, state.scale)
+        render(state.pageSizes, state.scale)
     );
 };

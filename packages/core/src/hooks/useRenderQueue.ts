@@ -7,7 +7,7 @@
  */
 
 import * as React from 'react';
-import { type PdfJs } from '../types/PdfJs';
+import type { PdfJs } from '../types/PdfJs';
 
 enum PageRenderStatus {
     NotRenderedYet = 'NotRenderedYet',
@@ -54,7 +54,7 @@ export const useRenderQueue = ({ doc }: { doc: PdfJs.PdfDocument }): UseRenderQu
                     renderStatus: PageRenderStatus.NotRenderedYet,
                     visibility: OUT_OF_RANGE_VISIBILITY,
                 })),
-        [docId],
+        [docId]
     );
 
     const latestRef = React.useRef<RenderQueue>({
@@ -101,9 +101,6 @@ export const useRenderQueue = ({ doc }: { doc: PdfJs.PdfDocument }): UseRenderQu
             if (i < startIndex || i > endIndex) {
                 latestRef.current.visibilities[i].visibility = OUT_OF_RANGE_VISIBILITY;
                 latestRef.current.visibilities[i].renderStatus = PageRenderStatus.NotRenderedYet;
-            } else if (latestRef.current.visibilities[i].visibility === OUT_OF_RANGE_VISIBILITY) {
-                // Reset to -1, so the unit tests can determine the next page in the queue to be rendered
-                latestRef.current.visibilities[i].visibility = -1;
             }
         }
     };
@@ -129,24 +126,16 @@ export const useRenderQueue = ({ doc }: { doc: PdfJs.PdfDocument }): UseRenderQu
         const firstVisiblePage = visiblePages[0].pageIndex;
         const lastVisiblePage = visiblePages[visiblePages.length - 1].pageIndex;
 
-        // Find the most visible page that isn't rendered yet
+        // Find the first visible page that isn't rendered yet
         const numVisiblePages = visiblePages.length;
-        let maxVisibilityPageIndex = -1;
-        let maxVisibility = -1;
         for (let i = 0; i < numVisiblePages; i++) {
             // There is a page that is being rendered
             if (visiblePages[i].renderStatus === PageRenderStatus.Rendering) {
                 return -1;
             }
             if (visiblePages[i].renderStatus === PageRenderStatus.NotRenderedYet) {
-                if (maxVisibilityPageIndex === -1 || visiblePages[i].visibility > maxVisibility) {
-                    maxVisibilityPageIndex = visiblePages[i].pageIndex;
-                    maxVisibility = visiblePages[i].visibility;
-                }
+                return visiblePages[i].pageIndex;
             }
-        }
-        if (maxVisibilityPageIndex > -1) {
-            return maxVisibilityPageIndex;
         }
 
         // All visible pages are rendered

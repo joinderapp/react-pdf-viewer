@@ -3,13 +3,10 @@ const webpack = require('webpack');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const distDir = path.join(__dirname, 'dist');
-const rootDir = path.join(__dirname, '../..');
-
 module.exports = {
     entry: './src/index.tsx',
     output: {
-        path: distDir,
+        path: path.join(__dirname, 'dist'),
         filename: '[name].[contenthash].js',
     },
     module: {
@@ -39,19 +36,11 @@ module.exports = {
         alias: {
             // We need it because we use the local development version of `@react-pdf-viewer/xxx`
             // Otherwise, we will see "Invalid hook call" error
-            react: path.join(rootDir, 'node_modules/react'),
+            react: path.join(__dirname, '../../node_modules/react'),
         },
     },
     devServer: {
-        static: [
-            {
-                directory: distDir,
-            },
-            // Serve the local PDF documents
-            {
-                directory: path.join(rootDir, 'samples'),
-            },
-        ],
+        static: path.join(__dirname, 'dist'),
         historyApiFallback: true,
         host: '0.0.0.0',
         port: 8001,
@@ -60,7 +49,6 @@ module.exports = {
         new HtmlWebPackPlugin({
             template: './src/index.html',
             filename: './index.html',
-            clean: true,
         }),
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css',
@@ -77,14 +65,14 @@ module.exports = {
 
                 switch (true) {
                     case request.endsWith('.css'):
-                        resource.request = path.join(rootDir, `packages/${pkgName}/src/styles/index.scss`);
+                        resource.request = path.join(__dirname, `../../packages/${pkgName}/src/styles/index.scss`);
                         break;
 
                     default:
-                        resource.request = path.join(rootDir, `packages/${pkgName}/src`);
+                        resource.request = path.join(__dirname, `../../packages/${pkgName}/src`);
                         break;
                 }
-            },
+            }
         ),
     ],
 };

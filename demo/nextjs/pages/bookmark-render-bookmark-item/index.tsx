@@ -1,5 +1,7 @@
-import { bookmarkPlugin, type RenderBookmarkItemProps } from '@react-pdf-viewer/bookmark';
+import { bookmarkPlugin } from '@react-pdf-viewer/bookmark';
+import type { RenderBookmarkItemProps } from '@react-pdf-viewer/bookmark';
 import { Icon, Viewer } from '@react-pdf-viewer/core';
+import * as React from 'react';
 
 const ExpandIcon = () => (
     <Icon size={16}>
@@ -23,7 +25,7 @@ const IndexPage = () => {
             <>
                 {renderProps.defaultRenderToggle(<ExpandIcon />, <CollapseIcon />)}
                 {renderProps.defaultRenderTitle(renderProps.onClickTitle)}
-            </>,
+            </>
         );
 
     return (

@@ -1,15 +1,13 @@
-import { PdfJsApiContext, Viewer, classNames, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { classNames, Viewer } from '@react-pdf-viewer/core';
 import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
-import { thumbnailPlugin, type RenderThumbnailItemProps } from '../src';
+import { RenderThumbnailItemProps, thumbnailPlugin } from '../src';
 
 const TestRenderThumbnailItem: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const renderThumbnailItem = (props: RenderThumbnailItemProps) => (
         <div
             key={props.pageIndex}
@@ -35,35 +33,33 @@ const TestRenderThumbnailItem: React.FC<{
     const { Thumbnails } = thumbnailPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <div
+            style={{
+                border: '1px solid rgba(0, 0, 0, 0.3)',
+                display: 'flex',
+                height: '50rem',
+                width: '50rem',
+            }}
+        >
             <div
                 style={{
-                    border: '1px solid rgba(0, 0, 0, 0.3)',
-                    display: 'flex',
-                    height: '50rem',
-                    width: '50rem',
+                    borderRight: '1px solid rgba(0, 0, 0, 0.3)',
+                    overflow: 'auto',
+                    width: '30%',
                 }}
             >
-                <div
-                    style={{
-                        borderRight: '1px solid rgba(0, 0, 0, 0.3)',
-                        overflow: 'auto',
-                        width: '30%',
-                    }}
-                >
-                    <Thumbnails renderThumbnailItem={renderThumbnailItem} />
-                </div>
-                <div style={{ flex: 1 }}>
-                    <Viewer fileUrl={fileUrl} plugins={[thumbnailPluginInstance]} />
-                </div>
+                <Thumbnails renderThumbnailItem={renderThumbnailItem} />
             </div>
-        </PdfJsApiContext.Provider>
+            <div style={{ flex: 1 }}>
+                <Viewer fileUrl={fileUrl} plugins={[thumbnailPluginInstance]} />
+            </div>
+        </div>
     );
 };
 
 test('Test renderThumbnailItem option', async () => {
     const { findByLabelText, findByTestId, getByTestId } = render(
-        <TestRenderThumbnailItem fileUrl={global['__OPEN_PARAMS_PDF__']} />,
+        <TestRenderThumbnailItem fileUrl={global['__OPEN_PARAMS_PDF__']} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -103,7 +99,7 @@ test('Test renderThumbnailItem option', async () => {
     expect(thumbnailsContainer.querySelectorAll('.custom-thumbnail-item').length).toEqual(8);
 
     // Find the second thumbnail
-    const secondThumbnail = await findByTestId('thumbnail-1');
+    let secondThumbnail = await findByTestId('thumbnail-1');
     expect(secondThumbnail).toHaveClass('custom-thumbnail-item');
 
     // Scroll to the second page
@@ -116,13 +112,13 @@ test('Test renderThumbnailItem option', async () => {
     await findByTestId('core__text-layer-2');
 
     // Wait until the second thumbnail is rendered
-    const secondThumbnailContainer = await findByTestId('thumbnail__container-1');
+    let secondThumbnailContainer = await findByTestId('thumbnail__container-1');
     mockIsIntersecting(secondThumbnailContainer, true);
 
     const secondThumbnailImage = await findByLabelText('Thumbnail of page 2');
     const src = secondThumbnailImage.getAttribute('src');
     expect(src?.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAADICAYAAAAKhRhlAAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV',
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAADICAYAAAAKhRhlAAAABmJLR0QA/wD/AP+gvaeTAAAgAElEQV'
     );
     expect(src?.length).toEqual(25166);
     expect(secondThumbnailImage.getAttribute('width')).toEqual('150px');

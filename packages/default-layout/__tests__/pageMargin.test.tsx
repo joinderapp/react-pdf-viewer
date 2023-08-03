@@ -1,6 +1,6 @@
-import { PdfJsApiContext, Viewer, type PageLayout, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import type { PageLayout } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { defaultLayoutPlugin } from '../src';
@@ -8,7 +8,6 @@ import { defaultLayoutPlugin } from '../src';
 const TestPageMargin: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
     const pageLayout: PageLayout = {
@@ -21,28 +20,26 @@ const TestPageMargin: React.FC<{
     };
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <div
-                style={{
-                    display: 'flex',
-                    height: '50rem',
-                    width: '50rem',
-                }}
-            >
-                <Viewer
-                    fileUrl={fileUrl}
-                    defaultScale={0.75}
-                    pageLayout={pageLayout}
-                    plugins={[defaultLayoutPluginInstance]}
-                />
-            </div>
-        </PdfJsApiContext.Provider>
+        <div
+            style={{
+                display: 'flex',
+                height: '50rem',
+                width: '50rem',
+            }}
+        >
+            <Viewer
+                fileUrl={fileUrl}
+                defaultScale={0.75}
+                pageLayout={pageLayout}
+                plugins={[defaultLayoutPluginInstance]}
+            />
+        </div>
     );
 };
 
 test('Page margin', async () => {
     const { findByLabelText, findByTestId, getByTestId } = render(
-        <TestPageMargin fileUrl={global['__OPEN_PARAMS_PDF__']} />,
+        <TestPageMargin fileUrl={global['__OPEN_PARAMS_PDF__']} />
     );
 
     const viewerEle = getByTestId('core__viewer');

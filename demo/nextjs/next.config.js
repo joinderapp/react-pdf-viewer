@@ -3,29 +3,15 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     reactStrictMode: true,
-    async rewrites() {
-        return [
-            {
-                source: '/ignore/:document\\.pdf',
-                destination: '/api/doc/ignore/:document',
-            },
-            {
-                source: '/:document\\.pdf',
-                destination: '/api/doc/:document',
-            },
-        ];
-    },
     webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-        const rootDir = path.join(__dirname, '../..');
-
         // We need it because we use the local development version of `@react-pdf-viewer/xxx`
         // Otherwise, we will see "Invalid hook call" error
-        config.resolve.alias['react'] = path.join(rootDir, 'node_modules/react');
+        config.resolve.alias['react'] = path.join(__dirname, '../../node_modules/react');
 
         // Be able to compile TypeScript files
         const tsLoader = {
             test: /\.ts(x?)$/,
-            include: [path.join(rootDir, 'packages')],
+            include: [path.join(__dirname, '../../packages')],
             exclude: /node_modules/,
             use: ['ts-loader'],
         };
@@ -49,14 +35,14 @@ module.exports = {
 
                 switch (true) {
                     case request.endsWith('.css'):
-                        resource.request = path.join(rootDir, `packages/${pkgName}/src/styles/index.scss`);
+                        resource.request = path.join(__dirname, `../../packages/${pkgName}/src/styles/index.scss`);
                         break;
 
                     default:
-                        resource.request = path.join(rootDir, `packages/${pkgName}/src`);
+                        resource.request = path.join(__dirname, `../../packages/${pkgName}/src`);
                         break;
                 }
-            },
+            }
         );
         config.externals.push({
             canvas: 'canvas',
@@ -68,11 +54,11 @@ module.exports = {
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: path.join(rootDir, 'node_modules/pdfjs-dist/build/pdf.worker.min.js'),
+                        from: path.join(__dirname, '../../node_modules/pdfjs-dist/build/pdf.worker.min.js'),
                         to: path.join(__dirname, 'public'),
                     },
                 ],
-            }),
+            })
         );
 
         return config;

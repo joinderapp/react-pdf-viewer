@@ -6,7 +6,8 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import { type Destination, type PdfJs } from '@react-pdf-viewer/core';
+import type { Destination, PdfJs } from '@react-pdf-viewer/core';
+import { SpecialZoomLevel } from '@react-pdf-viewer/core';
 
 export interface StoreProps {
     // Manage the expanded/collapsed state of each bookmark item

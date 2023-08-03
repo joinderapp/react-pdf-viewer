@@ -1,17 +1,7 @@
-import {
-    MinimalButton,
-    PdfJsApiContext,
-    Position,
-    RotateDirection,
-    Tooltip,
-    Viewer,
-    type PdfJsApiProvider,
-    type RenderPage,
-    type RenderPageProps,
-} from '@react-pdf-viewer/core';
+import type { RenderPage, RenderPageProps } from '@react-pdf-viewer/core';
+import { MinimalButton, Position, RotateDirection, Tooltip, Viewer } from '@react-pdf-viewer/core';
 import { RotateBackwardIcon, RotateForwardIcon } from '@react-pdf-viewer/rotate';
 import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
@@ -20,7 +10,6 @@ import { thumbnailPlugin } from '../src';
 const TestRotatePageWithThumbnails: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const thumbnailPluginInstance = thumbnailPlugin();
     const { Thumbnails } = thumbnailPluginInstance;
 
@@ -79,45 +68,43 @@ const TestRotatePageWithThumbnails: React.FC<{
     );
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <div
+            style={{
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                height: '50rem',
+                margin: '1rem auto',
+                width: '64rem',
+            }}
+        >
             <div
                 style={{
-                    border: '1px solid rgba(0, 0, 0, 0.1)',
-                    display: 'flex',
-                    height: '50rem',
-                    margin: '1rem auto',
-                    width: '64rem',
+                    borderRight: '1px solid rgba(0, 0, 0, 0.1)',
+                    width: '20%',
                 }}
             >
-                <div
-                    style={{
-                        borderRight: '1px solid rgba(0, 0, 0, 0.1)',
-                        width: '20%',
-                    }}
-                >
-                    <Thumbnails />
-                </div>
-                <div
-                    style={{
-                        flex: 1,
-                        overflow: 'hidden',
-                    }}
-                >
-                    <Viewer
-                        defaultScale={0.5}
-                        fileUrl={fileUrl}
-                        plugins={[thumbnailPluginInstance]}
-                        renderPage={renderPage}
-                    />
-                </div>
+                <Thumbnails />
             </div>
-        </PdfJsApiContext.Provider>
+            <div
+                style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                }}
+            >
+                <Viewer
+                    defaultScale={0.5}
+                    fileUrl={fileUrl}
+                    plugins={[thumbnailPluginInstance]}
+                    renderPage={renderPage}
+                />
+            </div>
+        </div>
     );
 };
 
 test('Rotate single page with thumbnails using renderPage', async () => {
     const { findByLabelText, findByTestId, getByTestId } = render(
-        <TestRotatePageWithThumbnails fileUrl={global['__OPEN_PARAMS_PDF__']} />,
+        <TestRotatePageWithThumbnails fileUrl={global['__OPEN_PARAMS_PDF__']} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -160,13 +147,13 @@ test('Rotate single page with thumbnails using renderPage', async () => {
     await findByTestId('thumbnail__list');
 
     // Find the third thumbnail
-    const thirdThumbnailContainer = await findByTestId('thumbnail__container-2');
+    let thirdThumbnailContainer = await findByTestId('thumbnail__container-2');
     mockIsIntersecting(thirdThumbnailContainer, true);
 
     const thirdThumbnailImage = await findByLabelText('Thumbnail of page 3');
-    const src = thirdThumbnailImage.getAttribute('src');
+    let src = thirdThumbnailImage.getAttribute('src');
     expect(src?.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIUAAABkCAYAAACowvMbAAAABmJLR0QA/wD/AP+gvaeTAAAKA0lEQV',
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIUAAABkCAYAAACowvMbAAAABmJLR0QA/wD/AP+gvaeTAAAKA0lEQV'
     );
     expect(src?.length).toEqual(3542);
     expect(thirdThumbnailImage.getAttribute('height')).toEqual('100px');

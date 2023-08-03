@@ -1,5 +1,6 @@
 import { Button, Spinner, Viewer } from '@react-pdf-viewer/core';
-import { printPlugin, type RenderPrintProps } from '@react-pdf-viewer/print';
+import { printPlugin } from '@react-pdf-viewer/print';
+import type { RenderPrintProps } from '@react-pdf-viewer/print';
 import * as React from 'react';
 
 const IndexPage = () => {
@@ -41,7 +42,7 @@ const IndexPage = () => {
                 </div>
             </div>
         ),
-        [],
+        []
     );
 
     const printPluginInstance = printPlugin({

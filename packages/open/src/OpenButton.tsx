@@ -6,18 +6,11 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import {
-    LocalizationContext,
-    MinimalButton,
-    Position,
-    Tooltip,
-    isMac,
-    type LocalizationMap,
-    type Store,
-} from '@react-pdf-viewer/core';
+import type { LocalizationMap, Store } from '@react-pdf-viewer/core';
+import { isMac, LocalizationContext, MinimalButton, Position, Tooltip } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { OpenFileIcon } from './OpenFileIcon';
-import { type StoreProps } from './types/StoreProps';
+import type { StoreProps } from './types/StoreProps';
 import { useTriggerOpen } from './useTriggerOpen';
 
 const TOOLTIP_OFFSET = { left: 0, top: 8 };

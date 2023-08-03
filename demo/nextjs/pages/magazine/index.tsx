@@ -1,6 +1,7 @@
 import { MinimalButton, ScrollMode, SpecialZoomLevel, Viewer, ViewMode } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
 import { NextIcon, pageNavigationPlugin, PreviousIcon } from '@react-pdf-viewer/page-navigation';
-import { ThumbnailDirection, thumbnailPlugin } from '@react-pdf-viewer/thumbnail';
+import { thumbnailPlugin, ThumbnailDirection } from '@react-pdf-viewer/thumbnail';
 
 const IndexPage = () => {
     const pageNavigationPluginInstance = pageNavigationPlugin();

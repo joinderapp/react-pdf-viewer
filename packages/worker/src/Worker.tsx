@@ -6,7 +6,8 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import { PdfJsApiContext, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import type { PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { PdfJsApiContext } from '@react-pdf-viewer/core';
 import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 

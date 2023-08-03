@@ -1,7 +1,8 @@
 import { MinimalButton, Position, RotateDirection, Tooltip, Viewer } from '@react-pdf-viewer/core';
-import { ThumbnailIcon, defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { defaultLayoutPlugin, ThumbnailIcon } from '@react-pdf-viewer/default-layout';
 import { RotateBackwardIcon, RotateForwardIcon } from '@react-pdf-viewer/rotate';
-import { type RenderThumbnailItemProps } from '@react-pdf-viewer/thumbnail';
+import type { RenderThumbnailItemProps } from '@react-pdf-viewer/thumbnail';
+import * as React from 'react';
 
 const TOOLTIP_OFFSET = { left: 0, top: 8 };
 

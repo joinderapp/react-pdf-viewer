@@ -6,23 +6,17 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import {
-    ViewMode,
-    createStore,
-    type Plugin,
-    type PluginFunctions,
-    type PluginOnDocumentLoad,
-    type ViewerState,
-} from '@react-pdf-viewer/core';
+import type { Plugin, PluginFunctions, PluginOnDocumentLoad, ViewerState } from '@react-pdf-viewer/core';
+import { createStore, ViewMode } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { Cover } from './Cover';
-import { SpinnerContext, defaultSpinner } from './SpinnerContext';
-import { ThumbnailListWithStore } from './ThumbnailListWithStore';
+import { defaultSpinner, SpinnerContext } from './SpinnerContext';
 import { ThumbnailDirection } from './structs/ThumbnailDirection';
-import { type CoverProps } from './types/CoverProps';
-import { type RenderCurrentPageLabel } from './types/RenderCurrentPageLabelProps';
-import { type RenderThumbnailItem } from './types/RenderThumbnailItemProps';
-import { type StoreProps } from './types/StoreProps';
+import { ThumbnailListWithStore } from './ThumbnailListWithStore';
+import type { CoverProps } from './types/CoverProps';
+import type { RenderCurrentPageLabel } from './types/RenderCurrentPageLabelProps';
+import type { RenderThumbnailItem } from './types/RenderThumbnailItemProps';
+import type { StoreProps } from './types/StoreProps';
 
 export interface ThumbnailsProps {
     renderThumbnailItem?: RenderThumbnailItem;
@@ -52,7 +46,7 @@ export const thumbnailPlugin = (pluginProps?: ThumbnailPluginProps): ThumbnailPl
                 },
                 viewMode: ViewMode.SinglePage,
             }),
-        [],
+        []
     );
     const [docId, setDocId] = React.useState('');
 
@@ -72,7 +66,7 @@ export const thumbnailPlugin = (pluginProps?: ThumbnailPluginProps): ThumbnailPl
                 />
             </SpinnerContext.Provider>
         ),
-        [docId],
+        [docId]
     );
 
     return {

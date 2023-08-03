@@ -1,6 +1,5 @@
-import { Button, PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Button, Viewer } from '@react-pdf-viewer/core';
 import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { defaultLayoutPlugin } from '../src';
@@ -9,50 +8,47 @@ const TestToggleTab: React.FC<{
     fileUrl: Uint8Array;
     initialTab: number;
 }> = ({ fileUrl, initialTab }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
     const { toggleTab } = defaultLayoutPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <div
+            style={{
+                margin: '1rem auto',
+                width: '50rem',
+            }}
+        >
             <div
                 style={{
-                    margin: '1rem auto',
-                    width: '50rem',
+                    alignItems: 'center',
+                    display: 'flex',
+                    marginBottom: '1rem',
                 }}
             >
-                <div
-                    style={{
-                        alignItems: 'center',
-                        display: 'flex',
-                        marginBottom: '1rem',
-                    }}
-                >
-                    <div style={{ marginRight: '0.5rem' }}>
-                        <Button testId="toggle-thumbnail-tab" onClick={() => toggleTab(0)}>
-                            Toggle thumbnail tab
-                        </Button>
-                    </div>
-                    <div style={{ marginRight: '0.5rem' }}>
-                        <Button testId="toggle-bookmark-tab" onClick={() => toggleTab(1)}>
-                            Toggle bookmark tab
-                        </Button>
-                    </div>
-                    <Button testId="toggle-attachment-tab" onClick={() => toggleTab(2)}>
-                        Toggle attachment tab
+                <div style={{ marginRight: '0.5rem' }}>
+                    <Button testId="toggle-thumbnail-tab" onClick={() => toggleTab(0)}>
+                        Toggle thumbnail tab
                     </Button>
                 </div>
-                <div style={{ height: '50rem' }}>
-                    <Viewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance]} />
+                <div style={{ marginRight: '0.5rem' }}>
+                    <Button testId="toggle-bookmark-tab" onClick={() => toggleTab(1)}>
+                        Toggle bookmark tab
+                    </Button>
                 </div>
+                <Button testId="toggle-attachment-tab" onClick={() => toggleTab(2)}>
+                    Toggle attachment tab
+                </Button>
             </div>
-        </PdfJsApiContext.Provider>
+            <div style={{ height: '50rem' }}>
+                <Viewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance]} />
+            </div>
+        </div>
     );
 };
 
 test('Toggle a tab', async () => {
-    const { findByTestId, getByTestId } = render(
-        <TestToggleTab fileUrl={global['__OPEN_PARAMS_PDF__']} initialTab={0} />,
+    const { findByLabelText, findByTestId, getByTestId } = render(
+        <TestToggleTab fileUrl={global['__OPEN_PARAMS_PDF__']} initialTab={0} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -77,9 +73,9 @@ test('Toggle a tab', async () => {
     // Toggle the thumbnail tab
     fireEvent.click(toggleThumbnailTab);
 
-    const thumbnailsListContainer = await findByTestId('thumbnail__list-container');
+    let thumbnailsListContainer = await findByTestId('thumbnail__list-container');
     mockIsIntersecting(thumbnailsListContainer, true);
-    const thumbnailsContainer = await findByTestId('thumbnail__list');
+    let thumbnailsContainer = await findByTestId('thumbnail__list');
     expect(thumbnailsContainer.childElementCount).toEqual(8);
 
     // Toggle the bookmark tab
@@ -92,7 +88,7 @@ test('Toggle a tab', async () => {
     // Toggle the attachment tab
     fireEvent.click(toggleAttachmentTab);
 
-    const attachmentContainer = await findByTestId('attachment__empty');
+    let attachmentContainer = await findByTestId('attachment__empty');
     expect(attachmentContainer.textContent).toEqual('There is no attachment');
 
     // Toggle the bookmark tab again

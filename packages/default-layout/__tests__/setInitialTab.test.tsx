@@ -1,6 +1,5 @@
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { defaultLayoutPlugin } from '../src';
@@ -9,24 +8,21 @@ const TestSetInitialTab: React.FC<{
     fileUrl: Uint8Array;
     initialTab: number;
 }> = ({ fileUrl, initialTab }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const defaultLayoutPluginInstance = defaultLayoutPlugin({
         setInitialTab: () => Promise.resolve(initialTab),
     });
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <div style={{ height: '50rem', width: '50rem' }}>
-                <Viewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance]} />
-            </div>
-        </PdfJsApiContext.Provider>
+        <div style={{ height: '50rem', width: '50rem' }}>
+            <Viewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance]} />
+        </div>
     );
 };
 
 test('Set the initial tab', async () => {
     // The thumbnail tab is activated initially
     const { findByLabelText, findByTestId, getByTestId } = render(
-        <TestSetInitialTab fileUrl={global['__OPEN_PARAMS_PDF__']} initialTab={0} />,
+        <TestSetInitialTab fileUrl={global['__OPEN_PARAMS_PDF__']} initialTab={0} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -44,25 +40,25 @@ test('Set the initial tab', async () => {
     await findByTestId('core__text-layer-3');
     await findByTestId('core__annotation-layer-3');
 
-    const thumbnailsListContainer = await findByTestId('thumbnail__list-container');
+    let thumbnailsListContainer = await findByTestId('thumbnail__list-container');
     mockIsIntersecting(thumbnailsListContainer, true);
-    const thumbnailsContainer = await findByTestId('thumbnail__list');
+    let thumbnailsContainer = await findByTestId('thumbnail__list');
 
     // Make the first thumbnail item visible
-    const thumbnailItems = Array.from(thumbnailsContainer.querySelectorAll('.rpv-thumbnail__container'));
+    let thumbnailItems = Array.from(thumbnailsContainer.querySelectorAll('.rpv-thumbnail__container'));
     mockIsIntersecting(thumbnailItems[0], true);
 
-    const firstThumbnail = await findByLabelText('Thumbnail of page 1');
-    const firstThumbnailSrc = firstThumbnail.getAttribute('src');
+    let firstThumbnail = await findByLabelText('Thumbnail of page 1');
+    let firstThumbnailSrc = firstThumbnail.getAttribute('src');
     expect(firstThumbnailSrc?.substring(0, 100)).toEqual(
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACFCAYAAACt+l1zAAAABmJLR0QA/wD/AP+gvaeTAAAKX0lEQV',
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACFCAYAAACt+l1zAAAABmJLR0QA/wD/AP+gvaeTAAAKX0lEQV'
     );
     expect(firstThumbnailSrc?.length).toEqual(3662);
 });
 
 test('Set invalid initial tab', async () => {
     const { findByTestId, getByTestId } = render(
-        <TestSetInitialTab fileUrl={global['__OPEN_PARAMS_PDF__']} initialTab={-1} />,
+        <TestSetInitialTab fileUrl={global['__OPEN_PARAMS_PDF__']} initialTab={-1} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -81,6 +77,6 @@ test('Set invalid initial tab', async () => {
     await findByTestId('core__annotation-layer-3');
 
     // The thumbnail tab is empty
-    const thumbnailsListContainer = await findByTestId('thumbnail__list-container');
+    let thumbnailsListContainer = await findByTestId('thumbnail__list-container');
     expect(thumbnailsListContainer.innerHTML).toEqual('');
 });

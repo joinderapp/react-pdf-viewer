@@ -1,21 +1,20 @@
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { findAllByTitle } from '@testing-library/dom';
 import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
-import { searchPlugin, type SingleKeyword } from '../src';
+import { searchPlugin } from '../src';
+import type { SingleKeyword } from '../src';
 
 const TestClearHighlights: React.FC<{
     fileUrl: Uint8Array;
     keywords: SingleKeyword[];
 }> = ({ fileUrl, keywords }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const searchPluginInstance = searchPlugin();
     const { clearHighlights, highlight } = searchPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <div>
             <div
                 style={{
                     display: 'flex',
@@ -38,7 +37,7 @@ const TestClearHighlights: React.FC<{
             >
                 <Viewer fileUrl={fileUrl} plugins={[searchPluginInstance]} />
             </div>
-        </PdfJsApiContext.Provider>
+        </div>
     );
 };
 
@@ -52,7 +51,7 @@ test('clearHighlights() method', async () => {
     ];
 
     const { findByText, findByTestId, getByTestId } = render(
-        <TestClearHighlights fileUrl={global['__MULTIPLE_PAGES_PDF__']} keywords={keywords} />,
+        <TestClearHighlights fileUrl={global['__MULTIPLE_PAGES_PDF__']} keywords={keywords} />
     );
     const viewerEle = getByTestId('core__viewer');
     mockIsIntersecting(viewerEle, true);
@@ -71,7 +70,7 @@ test('clearHighlights() method', async () => {
     await findByText('Simple PDF File 2');
 
     // Found 13 texts that match `PDF`
-    const highlights = await findAllByTitle(page, 'text');
+    let highlights = await findAllByTitle(page, 'text');
     expect(highlights.length).toEqual(13);
 
     // Click the `Clear highlights` button

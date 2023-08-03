@@ -1,18 +1,16 @@
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
 import { findAllByTitle } from '@testing-library/dom';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
+import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
-import { type FlagKeyword } from '../src';
+import type { FlagKeyword } from '../src';
 
 const TestKeepHighlight: React.FC<{
     fileUrl: Uint8Array;
     keyword: string | FlagKeyword;
 }> = ({ fileUrl, keyword }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const toolbarPluginInstance = toolbarPlugin({
         searchPlugin: {
             keyword,
@@ -21,32 +19,30 @@ const TestKeepHighlight: React.FC<{
     const { Toolbar } = toolbarPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <div
+            style={{
+                border: '1px solid rgba(0, 0, 0, 0.3)',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '50rem',
+                width: '50rem',
+            }}
+        >
             <div
                 style={{
-                    border: '1px solid rgba(0, 0, 0, 0.3)',
+                    alignItems: 'center',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.3)',
                     display: 'flex',
-                    flexDirection: 'column',
-                    height: '50rem',
-                    width: '50rem',
+                    height: '2.5rem',
+                    justifyContent: 'center',
                 }}
             >
-                <div
-                    style={{
-                        alignItems: 'center',
-                        borderBottom: '1px solid rgba(0, 0, 0, 0.3)',
-                        display: 'flex',
-                        height: '2.5rem',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <Toolbar />
-                </div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <Viewer fileUrl={fileUrl} plugins={[toolbarPluginInstance]} />
-                </div>
+                <Toolbar />
             </div>
-        </PdfJsApiContext.Provider>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+                <Viewer fileUrl={fileUrl} plugins={[toolbarPluginInstance]} />
+            </div>
+        </div>
     );
 };
 
@@ -54,7 +50,7 @@ test('Keep highlighting after clicking zoom buttons in the default toolbar', asy
     const keyword = 'document';
 
     const { findByTestId, getByTestId } = render(
-        <TestKeepHighlight fileUrl={global['__OPEN_PARAMS_PDF__']} keyword={keyword} />,
+        <TestKeepHighlight fileUrl={global['__OPEN_PARAMS_PDF__']} keyword={keyword} />
     );
 
     const viewerEle = getByTestId('core__viewer');
@@ -63,7 +59,7 @@ test('Keep highlighting after clicking zoom buttons in the default toolbar', asy
     viewerEle['__jsdomMockClientWidth'] = 800;
 
     // Wait until the document is loaded completely
-    await waitForElementToBeRemoved(() => getByTestId('core__doc-loading'));
+    await waitForElementToBeRemoved(() => screen.getByTestId('core__doc-loading'));
     await findByTestId('core__text-layer-0');
     await findByTestId('core__annotation-layer-0');
     await findByTestId('core__text-layer-1');

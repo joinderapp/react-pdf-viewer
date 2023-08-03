@@ -6,6 +6,7 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
+import type { LocalizationMap } from '@react-pdf-viewer/core';
 import {
     Button,
     classNames,
@@ -13,7 +14,6 @@ import {
     ProgressBar,
     TextDirection,
     ThemeContext,
-    type LocalizationMap,
 } from '@react-pdf-viewer/core';
 import * as React from 'react';
 

@@ -1,4 +1,5 @@
-import { ScrollMode, ViewMode, Viewer, type RenderPage, type RenderPageProps } from '@react-pdf-viewer/core';
+import type { RenderPage, RenderPageProps } from '@react-pdf-viewer/core';
+import { ScrollMode, Viewer, ViewMode } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 
 const IndexPage = () => {
@@ -7,12 +8,12 @@ const IndexPage = () => {
             fullScreenPlugin: {
                 onEnterFullScreen: () => {
                     defaultLayoutPluginInstance.toolbarPluginInstance.scrollModePluginInstance.switchScrollMode(
-                        ScrollMode.Vertical,
+                        ScrollMode.Vertical
                     );
                 },
                 onExitFullScreen: () => {
                     defaultLayoutPluginInstance.toolbarPluginInstance.scrollModePluginInstance.switchScrollMode(
-                        ScrollMode.Page,
+                        ScrollMode.Page
                     );
                 },
             },

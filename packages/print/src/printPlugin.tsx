@@ -6,7 +6,8 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import { createStore, type PdfJs, type Plugin, type RenderViewer, type Slot } from '@react-pdf-viewer/core';
+import type { PdfJs, Plugin, RenderViewer, Slot } from '@react-pdf-viewer/core';
+import { createStore } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { Print, PrintProps } from './Print';
 import { PrintButton } from './PrintButton';
@@ -14,7 +15,7 @@ import { PrintContainer } from './PrintContainer';
 import { PrintMenuItem, PrintMenuItemProps } from './PrintMenuItem';
 import { ShortcutHandler } from './ShortcutHandler';
 import { PrintStatus } from './structs/PrintStatus';
-import { type StoreProps } from './types/StoreProps';
+import type { StoreProps } from './types/StoreProps';
 
 export interface PrintPlugin extends Plugin {
     print: () => void;
@@ -42,16 +43,16 @@ export const printPlugin = (props?: PrintPluginProps): PrintPlugin => {
                             .fill(0)
                             .map((_, i) => i),
                 },
-                props,
+                props
             ),
-        [],
+        []
     );
     const store = React.useMemo(
         () =>
             createStore<StoreProps>({
                 printStatus: PrintStatus.Inactive,
             }),
-        [],
+        []
     );
 
     const print = () => {

@@ -1,6 +1,5 @@
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { mockResize } from '../../../test-utils/mockResizeObserver';
@@ -9,20 +8,17 @@ import { defaultLayoutPlugin } from '../src';
 const TestNavigateLastPage: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <div
-                style={{
-                    display: 'flex',
-                    height: '50rem',
-                    width: '64rem',
-                }}
-            >
-                <Viewer fileUrl={fileUrl} defaultScale={0.75} plugins={[defaultLayoutPluginInstance]} />
-            </div>
-        </PdfJsApiContext.Provider>
+        <div
+            style={{
+                display: 'flex',
+                height: '50rem',
+                width: '64rem',
+            }}
+        >
+            <Viewer fileUrl={fileUrl} defaultScale={0.75} plugins={[defaultLayoutPluginInstance]} />
+        </div>
     );
 };
 

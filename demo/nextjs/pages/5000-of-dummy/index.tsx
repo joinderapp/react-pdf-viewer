@@ -1,5 +1,7 @@
-import { Viewer, type RenderPageProps } from '@react-pdf-viewer/core';
+import type { RenderPageProps } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import * as React from 'react';
 
 const IndexPage = () => {
     const defaultLayoutPluginInstance = defaultLayoutPlugin();

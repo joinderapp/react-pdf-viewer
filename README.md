@@ -77,7 +77,7 @@ Be my friend on
 
 -   npm run build && npm pack
 
--   git tag -d @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master && git push --delete origin @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master && git tag @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master && git push --tags
+-   git tag @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master && git push --tags
 
 -   gh release create --target master --title @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master --notes '' @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master react-pdf-viewer-<PACKAGE_NAME>-<VERSION>.tgz
 

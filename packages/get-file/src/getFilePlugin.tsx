@@ -6,13 +6,14 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import { createStore, type OpenFile, type Plugin, type PluginOnDocumentLoad } from '@react-pdf-viewer/core';
+import type { OpenFile, Plugin, PluginOnDocumentLoad } from '@react-pdf-viewer/core';
+import { createStore } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { Download, DownloadProps } from './Download';
 import { DownloadButton } from './DownloadButton';
 import { DownloadMenuItem, DownloadMenuItemProps } from './DownloadMenuItem';
 import { getFileName } from './getFileName';
-import { type StoreProps } from './types/StoreProps';
+import type { StoreProps } from './types/StoreProps';
 
 export interface GetFilePlugin extends Plugin {
     Download: (props: DownloadProps) => React.ReactElement;

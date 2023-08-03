@@ -6,7 +6,7 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import { Spinner, type PdfJs, type Store, type StoreHandler } from '@react-pdf-viewer/core';
+import { PdfJs, Spinner, Store, StoreHandler } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { CoverInner } from './CoverInner';
 import { StoreProps } from './types/StoreProps';

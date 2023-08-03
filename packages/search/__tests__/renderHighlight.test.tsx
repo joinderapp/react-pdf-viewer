@@ -1,16 +1,15 @@
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { findAllByTitle } from '@testing-library/dom';
 import { render } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
-import { searchPlugin, type RenderHighlightsProps } from '../src';
+import type { RenderHighlightsProps } from '../src';
+import { searchPlugin } from '../src';
 
 const TestRenderHighlight: React.FC<{
     fileUrl: Uint8Array;
     keyword: string;
 }> = ({ fileUrl, keyword }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const searchPluginInstance = searchPlugin({
         keyword,
         renderHighlights: (renderProps: RenderHighlightsProps) => (
@@ -29,17 +28,15 @@ const TestRenderHighlight: React.FC<{
     });
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <div
-                style={{
-                    border: '1px solid rgba(0, 0, 0, .3)',
-                    height: '50rem',
-                    width: '50rem',
-                }}
-            >
-                <Viewer fileUrl={fileUrl} plugins={[searchPluginInstance]} />
-            </div>
-        </PdfJsApiContext.Provider>
+        <div
+            style={{
+                border: '1px solid rgba(0, 0, 0, .3)',
+                height: '50rem',
+                width: '50rem',
+            }}
+        >
+            <Viewer fileUrl={fileUrl} plugins={[searchPluginInstance]} />
+        </div>
     );
 };
 
@@ -47,7 +44,7 @@ test('Customize highlight elements', async () => {
     const keyword = 'text';
 
     const { findByText, findByTestId, getByTestId } = render(
-        <TestRenderHighlight fileUrl={global['__MULTIPLE_PAGES_PDF__']} keyword={keyword} />,
+        <TestRenderHighlight fileUrl={global['__MULTIPLE_PAGES_PDF__']} keyword={keyword} />
     );
     const viewerEle = getByTestId('core__viewer');
     mockIsIntersecting(viewerEle, true);

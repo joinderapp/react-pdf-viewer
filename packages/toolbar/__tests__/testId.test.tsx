@@ -1,6 +1,5 @@
-import { PdfJsApiContext, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
 import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { toolbarPlugin } from '../src';
@@ -8,35 +7,32 @@ import { toolbarPlugin } from '../src';
 const TestTestIdAttribute: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const toolbarPluginInstance = toolbarPlugin();
     const { Toolbar } = toolbarPluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
-            <div
-                style={{
-                    border: '1px solid rgba(0, 0, 0, 0.3)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: '50rem',
-                    width: '50rem',
-                }}
-            >
-                <div>
-                    <Toolbar />
-                </div>
-                <div style={{ flex: 1 }}>
-                    <Viewer fileUrl={fileUrl} plugins={[toolbarPluginInstance]} />
-                </div>
+        <div
+            style={{
+                border: '1px solid rgba(0, 0, 0, 0.3)',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '50rem',
+                width: '50rem',
+            }}
+        >
+            <div>
+                <Toolbar />
             </div>
-        </PdfJsApiContext.Provider>
+            <div style={{ flex: 1 }}>
+                <Viewer fileUrl={fileUrl} plugins={[toolbarPluginInstance]} />
+            </div>
+        </div>
     );
 };
 
 test('Test data-testid attribute', async () => {
     const { findByLabelText, findByTestId, getByTestId } = render(
-        <TestTestIdAttribute fileUrl={global['__SAMPLE_PDF__']} />,
+        <TestTestIdAttribute fileUrl={global['__SAMPLE_PDF__']} />
     );
 
     const viewerEle = getByTestId('core__viewer');

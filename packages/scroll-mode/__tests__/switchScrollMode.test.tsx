@@ -1,6 +1,5 @@
-import { PdfJsApiContext, PrimaryButton, ScrollMode, Viewer, type PdfJsApiProvider } from '@react-pdf-viewer/core';
-import { fireEvent, render, waitForElementToBeRemoved } from '@testing-library/react';
-import * as PdfJs from 'pdfjs-dist';
+import { PrimaryButton, ScrollMode, Viewer } from '@react-pdf-viewer/core';
+import { fireEvent, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import * as React from 'react';
 import { mockIsIntersecting } from '../../../test-utils/mockIntersectionObserver';
 import { scrollModePlugin } from '../src';
@@ -8,12 +7,11 @@ import { scrollModePlugin } from '../src';
 const TestSwitchScrollMode: React.FC<{
     fileUrl: Uint8Array;
 }> = ({ fileUrl }) => {
-    const apiProvider = PdfJs as unknown as PdfJsApiProvider;
     const scrollModePluginInstance = scrollModePlugin();
     const { switchScrollMode } = scrollModePluginInstance;
 
     return (
-        <PdfJsApiContext.Provider value={{ pdfJsApiProvider: apiProvider }}>
+        <>
             <div
                 style={{
                     marginBottom: '1rem',
@@ -32,14 +30,12 @@ const TestSwitchScrollMode: React.FC<{
             >
                 <Viewer fileUrl={fileUrl} defaultScale={0.5} plugins={[scrollModePluginInstance]} />
             </div>
-        </PdfJsApiContext.Provider>
+        </>
     );
 };
 
 test('call switchScrollMode() method', async () => {
-    const { findByTestId, findByText, getByTestId } = render(
-        <TestSwitchScrollMode fileUrl={global['__OPEN_PARAMS_PDF__']} />,
-    );
+    const { findByTestId, getByTestId } = render(<TestSwitchScrollMode fileUrl={global['__OPEN_PARAMS_PDF__']} />);
     mockIsIntersecting(getByTestId('core__viewer'), true);
 
     const viewerEle = getByTestId('core__viewer');
@@ -65,7 +61,7 @@ test('call switchScrollMode() method', async () => {
     expect(parseInt(page.style.width, 10)).toEqual(297);
     expect(parseInt(page.style.height, 10)).toEqual(396);
 
-    const switchModeButton = await findByText('Switch to horizontal mode');
+    const switchModeButton = await screen.findByText('Switch to horizontal mode');
     fireEvent.click(switchModeButton);
 
     const pagesContainer = await findByTestId('core__inner-pages');

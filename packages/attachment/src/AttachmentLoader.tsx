@@ -6,18 +6,11 @@
  * @copyright 2019-2023 Nguyen Huu Phuoc <me@phuoc.ng>
  */
 
-import {
-    LocalizationContext,
-    Spinner,
-    TextDirection,
-    ThemeContext,
-    classNames,
-    type LocalizationMap,
-    type PdfJs,
-} from '@react-pdf-viewer/core';
+import type { LocalizationMap, PdfJs } from '@react-pdf-viewer/core';
+import { classNames, LocalizationContext, Spinner, TextDirection, ThemeContext } from '@react-pdf-viewer/core';
 import * as React from 'react';
 import { AttachmentList } from './AttachmentList';
-import { type FileItem } from './types/FileItem';
+import type { FileItem } from './types/FileItem';
 
 interface AttachmentState {
     files: FileItem[];
