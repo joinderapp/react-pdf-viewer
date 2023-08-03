@@ -77,9 +77,9 @@ Be my friend on
 
 -   npm run build && npm pack
 
--   git tag @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master && git push --tags
+-   git tag -d @react-pdf-viewer/core@3.12.0-master && git push --delete origin @react-pdf-viewer/core@3.12.0-master && git tag @react-pdf-viewer/core@3.12.0-master && git push --tags
 
--   gh release create --target master --title @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master --notes '' @react-pdf-viewer/<PACKAGE_NAME>@<VERSION>-master react-pdf-viewer-<PACKAGE_NAME>-<VERSION>.tgz
+-   gh release create --target master --title @react-pdf-viewer/core@3.12.0-master --notes '' @react-pdf-viewer/core@3.12.0-master react-pdf-viewer-core-3.12.0.tgz
 
-** Ensure to replace <PACKAGE_NAME> and <PACKAGE_NAME> with the right package name and version number
+** Ensure to replace core and core with the right package name and version number
 Example: @react-pdf-viewer/core@3.12.0-master **
