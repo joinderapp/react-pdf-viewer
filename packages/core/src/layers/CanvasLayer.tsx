@@ -51,8 +51,10 @@ export const CanvasLayer: React.FC<{
             }
         });
 
+        //Because we are using the first page viewport to determine page rotation, width and height, 
+        //passing rotation here causes issues. To avoid that, let's let the PDF canvas automatically set the rotation.
+        //This could mean the rotation plugin get's affected, need to test...
         const viewport = page.getViewport({
-            rotation,
             scale,
         });
 
